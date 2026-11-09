@@ -10,54 +10,70 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Manifesto para PWA (Instalação como App) -->
+    <!-- Manifesto para PWA -->
     <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Analisador%20Preditivo%22%2C%22short_name%22%3A%22Analisador%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23020617%22%2C%22theme_color%22%3A%22%23059669%22%2C%22icons%22%3A%5B%5D%7D">
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center p-4">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center p-3">
 
-    <div class="w-full max-w-md bg-slate-900 rounded-2xl shadow-2xl p-5 border border-slate-800">
-        <header class="text-center mb-4">
-            <h1 class="text-xl font-bold text-emerald-400 flex items-center justify-center gap-2">
-                <i data-lucide="brain-circuit" class="w-6 h-6"></i> Analisador Preditivo 0-36
+    <div class="w-full max-w-md bg-slate-900 rounded-2xl shadow-2xl p-4 border border-slate-800">
+        <header class="text-center mb-3">
+            <h1 class="text-lg font-bold text-emerald-400 flex items-center justify-center gap-2">
+                <i data-lucide="brain-circuit" class="w-5 h-5"></i> Analisador Preditivo 0-36
             </h1>
-            <p class="text-xs text-slate-400 mt-0.5">Estatísticas, Padrões & Confiabilidade</p>
+            <p class="text-[11px] text-slate-400">Estatísticas, Cores, Padrões & Teclado Tátil</p>
         </header>
 
-        <!-- Entrada de Dados -->
-        <div class="flex gap-2 mb-4">
-            <input type="number" id="inputNumero" min="0" max="36" placeholder="Número (0-36)" 
-                class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-center text-xl font-bold focus:outline-none focus:border-emerald-500 text-white"
-                onkeypress="if(event.key === 'Enter') adicionarNumero()">
-            <button onclick="adicionarNumero()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 rounded-xl transition shadow-lg shadow-emerald-900/40 flex items-center justify-center gap-1">
-                <i data-lucide="plus-circle" class="w-5 h-5"></i> Inserir
+        <!-- Visor do Número Atual Sendo Digitado -->
+        <div class="flex gap-2 mb-3">
+            <div id="visorNumero" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-center text-xl font-bold font-mono text-emerald-400 flex items-center justify-center tracking-widest min-h-[48px]">
+                -
+            </div>
+            <button onclick="apagarDigito()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 rounded-xl transition border border-slate-700 flex items-center justify-center" title="Apagar">
+                <i data-lucide="delete" class="w-5 h-5"></i>
+            </button>
+            <button onclick="confirmarNumero()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 rounded-xl transition shadow-lg shadow-emerald-900/40 flex items-center justify-center text-xs">
+                Inserir
             </button>
         </div>
 
+        <!-- Teclado Tátil Personalizado (0 a 9) -->
+        <div class="grid grid-cols-5 gap-1.5 mb-3 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+            <button onclick="digitar(1)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">1</button>
+            <button onclick="digitar(2)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">2</button>
+            <button onclick="digitar(3)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">3</button>
+            <button onclick="digitar(4)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">4</button>
+            <button onclick="digitar(5)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">5</button>
+            
+            <button onclick="digitar(6)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">6</button>
+            <button onclick="digitar(7)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">7</button>
+            <button onclick="digitar(8)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">8</button>
+            <button onclick="digitar(9)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">9</button>
+            <button onclick="digitar(0)" class="bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700 text-emerald-400 font-bold py-2.5 rounded-lg text-base transition">0</button>
+        </div>
+
         <!-- Painel Visual Reduzido (Grade 3x3 + Zero) -->
-        <div class="mb-4 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
-            <div class="flex justify-between items-center mb-2">
-                <span class="text-xs font-semibold text-slate-400 flex items-center gap-1">
+        <div class="mb-3 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+            <div class="flex justify-between items-center mb-1.5">
+                <span class="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
                     <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i> Mapa do Último Número
                 </span>
                 <span id="badgeUltimoMapa" class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">-</span>
             </div>
-            <div class="grid grid-cols-4 gap-1.5 text-center text-xs font-bold">
-                <!-- Zero Isolado -->
-                <div id="grid-0" class="bg-emerald-950/50 border border-emerald-800/60 rounded p-2 flex flex-col justify-center items-center text-emerald-400">
-                    <span class="text-[9px] text-slate-500">ZERO</span>
-                    <span class="text-sm">0</span>
+            <div class="grid grid-cols-4 gap-1 text-center text-xs font-bold">
+                <div id="grid-0" class="bg-emerald-950/50 border border-emerald-800/60 rounded p-1.5 flex flex-col justify-center items-center text-emerald-400">
+                    <span class="text-[8px] text-slate-500">ZERO</span>
+                    <span class="text-xs">0</span>
                 </div>
-                <!-- Colunas 1, 2, 3 -->
-                <div class="col-span-3 grid grid-cols-3 gap-1.5">
-                    <div id="grid-col-1" class="bg-slate-900 border border-slate-800 rounded p-2 flex flex-col justify-center">
+                <div class="col-span-3 grid grid-cols-3 gap-1">
+                    <div id="grid-col-1" class="bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center">
                         <span class="text-[8px] text-slate-500">COL 1</span>
                         <span class="text-slate-300">-</span>
                     </div>
-                    <div id="grid-col-2" class="bg-slate-900 border border-slate-800 rounded p-2 flex flex-col justify-center">
+                    <div id="grid-col-2" class="bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center">
                         <span class="text-[8px] text-slate-500">COL 2</span>
                         <span class="text-slate-300">-</span>
                     </div>
-                    <div id="grid-col-3" class="bg-slate-900 border border-slate-800 rounded p-2 flex flex-col justify-center">
+                    <div id="grid-col-3" class="bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center">
                         <span class="text-[8px] text-slate-500">COL 3</span>
                         <span class="text-slate-300">-</span>
                     </div>
@@ -66,81 +82,109 @@
         </div>
 
         <!-- Barra de Confiabilidade da Amostra -->
-        <div class="mb-4 bg-slate-950 p-3 rounded-xl border border-slate-800">
-            <div class="flex justify-between text-xs mb-1.5">
+        <div class="mb-3 bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+            <div class="flex justify-between text-[11px] mb-1">
                 <span class="text-slate-400 flex items-center gap-1">
                     <i data-lucide="gauge" class="w-3.5 h-3.5"></i> Confiabilidade da Amostra
                 </span>
                 <span id="labelConfiabilidade" class="font-bold text-slate-400">0% (Aguardando dados)</span>
             </div>
-            <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+            <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
                 <div id="barraConfiabilidade" class="bg-amber-500 h-full w-0 transition-all duration-300"></div>
             </div>
         </div>
 
-        <!-- Painel de Previsão Inteligente -->
-        <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 mb-4">
-            <h2 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-emerald-400"></i> Previsão Preditiva (Com Pesos)
+        <!-- Painel de Previsão Inteligente (Maior e Mais Visível) -->
+        <div class="bg-slate-950 border border-emerald-500/40 rounded-xl p-3.5 mb-3 shadow-inner shadow-emerald-950/30">
+            <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                <i data-lucide="sparkles" class="w-4 h-4"></i> Previsões Preditivas (Destaque)
             </h2>
-            <div id="painelPrevisao" class="text-center text-slate-400 text-xs italic py-2">
-                Insira pelo menos 6 números para iniciar a projeção de tendências.
+            <div id="painelPrevisao" class="text-center text-slate-300 text-xs py-1">
+                Insira pelo menos 6 números para iniciar as projeções.
             </div>
         </div>
 
         <!-- Estatísticas da Sessão Atual -->
-        <div class="grid grid-cols-2 gap-2 mb-4 text-xs">
+        <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
             <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
-                <span class="text-slate-500 block">Total de Giros:</span>
-                <span id="statTotal" class="text-base font-bold text-white">0</span>
+                <span class="text-slate-500 block text-[10px]">Total de Giros:</span>
+                <span id="statTotal" class="text-sm font-bold text-white">0</span>
             </div>
             <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
-                <span class="text-slate-500 block">Últimos Números:</span>
-                <span id="statUltimos" class="text-emerald-400 font-mono font-semibold truncate block">-</span>
+                <span class="text-slate-500 block text-[10px]">Últimos Números:</span>
+                <span id="statUltimos" class="text-emerald-400 font-mono font-semibold truncate block text-xs">-</span>
             </div>
         </div>
 
         <!-- Botão de Reiniciar Sessão -->
-        <button onclick="limparSessao()" class="w-full bg-rose-950/40 hover:bg-rose-900/40 border border-rose-800/50 text-rose-300 font-semibold py-2.5 rounded-xl transition flex items-center justify-center gap-2 text-xs">
-            <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Limpar Sessão / Nova Linha de Raciocínio
+        <button onclick="limparSessao()" class="w-full bg-rose-950/40 hover:bg-rose-900/40 border border-rose-800/50 text-rose-300 font-semibold py-2 rounded-xl transition flex items-center justify-center gap-2 text-xs">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Limpar Sessão / Nova Linha de Raciocínio
         </button>
     </div>
 
     <script>
-        // Inicializar ícones do Lucide
         lucide.createIcons();
 
-        // Configuração do Supabase (Insira suas chaves reais aqui quando for sincronizar)
+        // Configuração do Supabase
         const SUPABASE_URL = 'SUA_SUPABASE_URL';
         const SUPABASE_ANON_KEY = 'SUA_SUPABASE_ANON_KEY';
         const supabaseClient = (SUPABASE_URL !== 'SUA_SUPABASE_URL') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
         let historicoSessao = [];
         let sessionId = 'sessao_' + Date.now();
+        let entradaAtual = "";
 
-        async function adicionarNumero() {
-            const input = document.getElementById('inputNumero');
-            const valor = parseInt(input.value);
+        // Regra padrão de cores da roleta europeia/americana para 1 a 36
+        const numerosVermelhos = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+
+        function obterCor(n) {
+            if (n === 0) return 'Verde';
+            return numerosVermelhos.includes(n) ? 'Vermelho' : 'Preto';
+        }
+
+        function digitar(num) {
+            if (entradaAtual.length >= 2) {
+                entradaAtual = num.toString(); // substitui se passar de 2 digitos
+            } else {
+                entradaAtual += num.toString();
+            }
+
+            // Validar se o valor digitado ultrapassa 36
+            let valInt = parseInt(entradaAtual);
+            if (valInt > 36) {
+                entradaAtual = num.toString();
+            }
+
+            document.getElementById('visorNumero').innerText = entradaAtual;
+        }
+
+        function apagarDigito() {
+            entradaAtual = "";
+            document.getElementById('visorNumero').innerText = "-";
+        }
+
+        async function confirmarNumero() {
+            if (entradaAtual === "") return;
+            const valor = parseInt(entradaAtual);
 
             if (isNaN(valor) || valor < 0 || valor > 36) {
-                alert('Por favor, digite um número válido entre 0 e 36.');
+                alert('Número inválido. Digite de 0 a 36.');
+                apagarDigito();
                 return;
             }
 
             historicoSessao.push(valor);
-            input.value = '';
-            input.focus();
+            apagarDigito();
 
             atualizarInterface(valor);
 
-            // Envio assíncrono ao Supabase
             if (supabaseClient) {
                 try {
                     await supabaseClient.from('historico_analise').insert([
                         { session_id: sessionId, numero: valor, criado_em: new Date() }
                     ]);
                 } catch (e) {
-                    console.error('Erro ao sincronizar com Supabase:', e);
+                    console.error('Erro ao sincronizar:', e);
                 }
             }
         }
@@ -152,19 +196,20 @@
             const ultimos5 = historicoSessao.slice(-5).join(', ');
             document.getElementById('statUltimos').innerText = ultimos5 || '-';
 
-            // Atualizar mapa visual do último número
             if (ultimoValor !== undefined) {
-                document.getElementById('badgeUltimoMapa').innerText = `#${ultimoValor}`;
+                let corUltimo = obterCor(ultimoValor);
+                let badgeCorClass = corUltimo === 'Vermelho' ? 'bg-rose-900/80 text-rose-300' : (corUltimo === 'Preto' ? 'bg-slate-800 text-slate-300' : 'bg-emerald-900 text-emerald-300');
+                document.getElementById('badgeUltimoMapa').innerHTML = `#${ultimoValor} <span class="text-[9px] px-1 rounded ${badgeCorClass}">${corUltimo}</span>`;
                 
                 [1, 2, 3].forEach(c => {
                     const el = document.getElementById(`grid-col-${c}`);
-                    el.className = "bg-slate-900 border border-slate-800 rounded p-2 flex flex-col justify-center";
+                    el.className = "bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center";
                 });
 
                 if (ultimoValor > 0) {
                     let colAtual = (ultimoValor % 3 === 0) ? 3 : ultimoValor % 3;
                     const elAtivo = document.getElementById(`grid-col-${colAtual}`);
-                    elAtivo.className = "bg-emerald-950/70 border border-emerald-600 rounded p-2 flex flex-col justify-center text-emerald-400 font-bold";
+                    elAtivo.className = "bg-emerald-950/70 border border-emerald-600 rounded p-1.5 flex flex-col justify-center text-emerald-400 font-bold";
                 }
             }
 
@@ -191,7 +236,7 @@
             const painel = document.getElementById('painelPrevisao');
             
             if (historicoSessao.length < 6) {
-                painel.innerHTML = `<span class="text-slate-400 italic">Aguardando dados... Faltam ${6 - historicoSessao.length} entradas para o sistema liberar projeções.</span>`;
+                painel.innerHTML = `<span class="text-slate-400 italic text-xs">Aguardando dados... Faltam ${6 - historicoSessao.length} entradas para o sistema liberar projeções.</span>`;
                 return;
             }
 
@@ -199,6 +244,8 @@
             let pontuacaoBaixos = 0;
             let pontuacaoPares = 0;
             let pontuacaoImpares = 0;
+            let pontuacaoVermelho = 0;
+            let pontuacaoPreto = 0;
             let colunasPontos = [0, 0, 0];
 
             historicoSessao.forEach((n, index) => {
@@ -211,6 +258,10 @@
                     if (n % 2 === 0) pontuacaoPares += peso;
                     else pontuacaoImpares += peso;
 
+                    let cor = obterCor(n);
+                    if (cor === 'Vermelho') pontuacaoVermelho += peso;
+                    else if (cor === 'Preto') pontuacaoPreto += peso;
+
                     let col = (n % 3 === 0) ? 3 : n % 3;
                     colunasPontos[col - 1] += peso;
                 }
@@ -218,19 +269,31 @@
 
             let tendenciaFaixa = pontuacaoBaixos > pontuacaoAltos ? "Baixos (1 a 18)" : "Altos (19 a 36)";
             let tendenciaParidade = pontuacaoPares > pontuacaoImpares ? "Ímpar" : "Par";
+            let tendenciaCor = pontuacaoVermelho > pontuacaoPreto ? "Preto ⬛" : "Vermelho 🟥";
             
             let menorColunaIdx = colunasPontos.indexOf(Math.min(...colunasPontos));
             let colunaSugerida = menorColunaIdx + 1;
 
-            let avisoExtra = historicoSessao.length < 10 ? '<p class="text-[10px] text-amber-400/80 mt-1">⚠️ Amostra em maturação. Aguarde mais giros para maior precisão.</p>' : '';
-
             painel.innerHTML = `
                 <div class="space-y-1.5 text-left text-xs">
-                    <p class="text-emerald-300 font-semibold">🔮 Tendências Projetadas (Ponderadas):</p>
-                    <p>• Faixa Provável: <span class="text-white font-bold">${tendenciaFaixa}</span></p>
-                    <p>• Paridade Provável: <span class="text-white font-bold">${tendenciaParidade}</span></p>
-                    <p>• Coluna em Desequilíbrio: <span class="text-white font-bold">${colunaSugerida}ª Coluna</span></p>
-                    ${avisoExtra}
+                    <div class="flex justify-between items-center bg-slate-900/80 p-2 rounded-lg border border-slate-800">
+                        <span class="text-slate-400">Cor Provável:</span>
+                        <span class="text-white font-bold text-sm">${tendenciaCor}</span>
+                    </div>
+                    <div class="grid grid-cols-2 gap-1.5 pt-1">
+                        <div class="bg-slate-900/60 p-1.5 rounded border border-slate-800">
+                            <span class="text-[10px] text-slate-400 block">Faixa:</span>
+                            <span class="text-white font-bold text-xs">${tendenciaFaixa}</span>
+                        </div>
+                        <div class="bg-slate-900/60 p-1.5 rounded border border-slate-800">
+                            <span class="text-[10px] text-slate-400 block">Paridade:</span>
+                            <span class="text-white font-bold text-xs">${tendenciaParidade}</span>
+                        </div>
+                    </div>
+                    <div class="bg-slate-900/60 p-1.5 rounded border border-slate-800 mt-1">
+                        <span class="text-[10px] text-slate-400 block">Coluna em Desequilíbrio:</span>
+                        <span class="text-emerald-400 font-bold text-xs">${colunaSugerida}ª Coluna</span>
+                    </div>
                 </div>
             `;
         }
@@ -239,12 +302,14 @@
             if (confirm("Deseja realmente limpar os dados e iniciar uma nova linha de raciocínio?")) {
                 historicoSessao = [];
                 sessionId = 'sessao_' + Date.now();
+                entradaAtual = "";
+                document.getElementById('visorNumero').innerText = "-";
                 atualizarInterface();
                 document.getElementById('badgeUltimoMapa').innerText = '-';
                 [1, 2, 3].forEach(c => {
-                    document.getElementById(`grid-col-${c}`).className = "bg-slate-900 border border-slate-800 rounded p-2 flex flex-col justify-center";
+                    document.getElementById(`grid-col-${c}`).className = "bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center";
                 });
-                document.getElementById('painelPrevisao').innerHTML = `<span class="text-slate-400 italic">Sessão reiniciada. Aguardando novos dados...</span>`;
+                document.getElementById('painelPrevisao').innerHTML = `<span class="text-slate-400 italic text-xs">Sessão reiniciada. Aguardando novos dados...</span>`;
             }
         }
     </script>
