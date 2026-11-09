@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analisador Preditivo 0-36</title>
+    <title>Analisador Preditivo 0-36 PRO</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Ícones Lucide -->
@@ -18,9 +18,9 @@
     <div class="w-full max-w-md bg-slate-900 rounded-2xl shadow-2xl p-4 border border-slate-800">
         <header class="text-center mb-3">
             <h1 class="text-lg font-bold text-emerald-400 flex items-center justify-center gap-2">
-                <i data-lucide="brain-circuit" class="w-5 h-5"></i> Analisador Preditivo 0-36
+                <i data-lucide="cpu" class="w-5 h-5"></i> Analisador Preditivo PRO
             </h1>
-            <p class="text-[11px] text-slate-400">Inteligência Estatística & Padrões Avançados</p>
+            <p class="text-[11px] text-slate-400">Inteligência de Ciclos, Atrasos & Tendências</p>
         </header>
 
         <!-- Visor do Número Atual Sendo Digitado -->
@@ -94,13 +94,13 @@
             </div>
         </div>
 
-        <!-- Painel de Previsão Inteligente Avançada -->
+        <!-- Painel de Previsão Inteligente PRO -->
         <div class="bg-slate-950 border border-emerald-500/40 rounded-xl p-3.5 mb-3 shadow-inner shadow-emerald-950/30">
             <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <i data-lucide="sparkles" class="w-4 h-4"></i> Inteligência Preditiva Avançada
+                <i data-lucide="brain" class="w-4 h-4"></i> Inteligência Preditiva PRO (Ciclos & Atrasos)
             </h2>
             <div id="painelPrevisao" class="text-center text-slate-300 text-xs py-1">
-                Insira pelo menos 6 números para ativar os algoritmos de IA.
+                Insira pelo menos 6 números para ativar o motor neural estatístico.
             </div>
         </div>
 
@@ -125,7 +125,6 @@
     <script>
         lucide.createIcons();
 
-        // Configuração do Supabase
         const SUPABASE_URL = 'SUA_SUPABASE_URL';
         const SUPABASE_ANON_KEY = 'SUA_SUPABASE_ANON_KEY';
         const supabaseClient = (SUPABASE_URL !== 'SUA_SUPABASE_URL') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
@@ -227,90 +226,84 @@
                 labelConf.innerText = `${confPercent}% (Alta Confiabilidade)`;
             }
 
-            analisarInteligenciaAvancada();
+            analisarInteligenciaPro();
         }
 
-        function analisarInteligenciaAvancada() {
+        function analisarInteligenciaPro() {
             const painel = document.getElementById('painelPrevisao');
             
             if (historicoSessao.length < 6) {
-                painel.innerHTML = `<span class="text-slate-400 italic text-xs">Aguardando dados... Faltam ${6 - historicoSessao.length} entradas para o algoritmo ativar.</span>`;
+                painel.innerHTML = `<span class="text-slate-400 italic text-xs">Aguardando dados... Faltam ${6 - historicoSessao.length} entradas para o motor PRO ativar.</span>`;
                 return;
             }
 
-            let pontuacaoAltos = 0;
-            let pontuacaoBaixos = 0;
-            let pontuacaoPares = 0;
-            let pontuacaoImpares = 0;
-            let pontuacaoVermelho = 0;
-            let pontuacaoPreto = 0;
-            let colunasPontos = [0, 0, 0];
+            // 1. Cálculo de Atrasos (Quantas rodadas atrás cada categoria apareceu pela última vez)
+            let atrasoBaixo = 999, atrasoAlto = 999;
+            let atrasoPar = 999, atrasoImpar = 999;
+            let atrasoVermelho = 999, atrasoPreto = 999;
+            let atrasoCol = [999, 999, 999];
 
-            // Análise de Momentum (Últimos 5 com peso duplo)
-            historicoSessao.forEach((n, index) => {
+            const totalGiros = historicoSessao.length;
+
+            historicoSessao.slice().reverse().forEach((n, idx) => {
                 if (n > 0) {
-                    let peso = index >= historicoSessao.length - 5 ? 2.0 : 1.0;
-
-                    if (n <= 18) pontuacaoBaixos += peso;
-                    else pontuacaoAltos += peso;
-
-                    if (n % 2 === 0) pontuacaoPares += peso;
-                    else pontuacaoImpares += peso;
+                    if (n <= 18 && atrasoBaixo === 999) atrasoBaixo = idx;
+                    if (n > 18 && atrasoAlto === 999) atrasoAlto = idx;
+                    if (n % 2 === 0 && atrasoPar === 999) atrasoPar = idx;
+                    if (n % 2 !== 0 && atrasoImpar === 999) atrasoImpar = idx;
 
                     let cor = obterCor(n);
-                    if (cor === 'Vermelho') pontuacaoVermelho += peso;
-                    else if (cor === 'Preto') pontuacaoPreto += peso;
+                    if (cor === 'Vermelho' && atrasoVermelho === 999) atrasoVermelho = idx;
+                    if (cor === 'Preto' && atrasoPreto === 999) atrasoPreto = idx;
 
                     let col = (n % 3 === 0) ? 3 : n % 3;
-                    colunasPontos[col - 1] += peso;
+                    if (atrasoCol[col - 1] === 999) atrasoCol[col - 1] = idx;
                 }
             });
 
-            // Inteligência de Tendência vs Reversão baseada nos últimos 3 elementos
-            let ultimos3 = historicoSessao.slice(-3);
-            let ultimos3Altos = ultimos3.filter(n => n > 18).length;
-            let padraoMomento = "";
+            // 2. Lógica de Ciclo e Tendência por Atraso (Lei do Reequilíbrio Máximo)
+            let predFaixa = atrasoBaixo > atrasoAlto ? "Baixos (1 a 18) 🟢" : "Altos (19 a 36) 🔵";
+            let predParidade = atrasoPar > atrasoImpar ? "Par ⚖️" : "Ímpar ⚡";
+            let predCor = atrasoVermelho > atrasoPreto ? "Vermelho 🟥" : "Preto ⬛";
             
-            if (ultimos3Altos === 3) {
-                padraoMomento = "🔥 Forte Momento de Altos (Tendência de Continuidade)";
-            } else if (ultimos3Altos === 0) {
-                padraoMomento = "❄️ Forte Momento de Baixos (Alerta de Reversão)";
-            } else {
-                padraoMomento = "⚖️ Cenário Oscilante / Equilibrado";
+            // Coluna com maior atraso (maior ausência)
+            let maxAtrasoCol = Math.max(...atrasoCol);
+            let colunaSugerida = atrasoCol.indexOf(maxAtrasoCol) + 1;
+
+            // 3. Força do Ciclo baseado na estabilidade dos últimos 4 números
+            let ultimos4 = historicoSessao.slice(-4);
+            let correntesIguais = true;
+            for(let i=1; i<ultimos4.length; i++) {
+                if ((ultimos4[i] <= 18) !== (ultimos4[i-1] <= 18)) correntesIguais = false;
             }
 
-            let tendenciaFaixa = pontuacaoBaixos > pontuacaoAltos ? "Baixos (1 a 18)" : "Altos (19 a 36)";
-            let tendenciaParidade = pontuacaoPares > pontuacaoImpares ? "Ímpar" : "Par";
-            let tendenciaCor = pontuacaoVermelho > pontuacaoPreto ? "Preto ⬛" : "Vermelho 🟥";
-            
-            let menorColunaIdx = colunasPontos.indexOf(Math.min(...colunasPontos));
-            let colunaSugerida = menorColunaIdx + 1;
+            let statusCiclo = correntesIguais ? "⚠️ Ciclo Esticado (Alerta de Quebra)" : "🔄 Ciclo Alternado / Saudável";
 
             painel.innerHTML = `
                 <div class="space-y-2 text-left text-xs">
                     <div class="bg-emerald-950/40 border border-emerald-800/50 p-2 rounded-lg text-center">
-                        <span class="text-[10px] text-emerald-400 block uppercase tracking-wider font-semibold">Análise de Comportamento</span>
-                        <span class="text-white font-bold text-xs">${padraoMomento}</span>
+                        <span class="text-[10px] text-emerald-400 block uppercase tracking-wider font-semibold">Status do Ciclo Atual</span>
+                        <span class="text-white font-bold text-xs">${statusCiclo}</span>
                     </div>
 
                     <div class="grid grid-cols-2 gap-1.5">
                         <div class="bg-slate-900/80 p-2 rounded border border-slate-800">
-                            <span class="text-[10px] text-slate-400 block">Cor Prevista:</span>
-                            <span class="text-white font-bold text-xs">${tendenciaCor}</span>
+                            <span class="text-[10px] text-slate-400 block">Cor Mais Provável (Atraso):</span>
+                            <span class="text-white font-bold text-xs">${predCor}</span>
                         </div>
                         <div class="bg-slate-900/80 p-2 rounded border border-slate-800">
-                            <span class="text-[10px] text-slate-400 block">Faixa Principal:</span>
-                            <span class="text-white font-bold text-xs">${tendenciaFaixa}</span>
+                            <span class="text-[10px] text-slate-400 block">Faixa com Maior Déficit:</span>
+                            <span class="text-white font-bold text-xs">${predFaixa}</span>
                         </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-1.5">
                         <div class="bg-slate-900/80 p-2 rounded border border-slate-800">
-                            <span class="text-[10px] text-slate-400 block">Paridade Sugerida:</span>
-                            <span class="text-white font-bold text-xs">${tendenciaParidade}</span>
+                            <span class="text-[10px] text-slate-400 block">Paridade Estimada:</span>
+                            <span class="text-white font-bold text-xs">${predParidade}</span>
                         </div>
                         <div class="bg-slate-900/80 p-2 rounded border border-slate-800">
-                            <span class="text-[10px] text-slate-400 block">Coluna em Déficit:</span>
+                            <span class="text-[10px] text-slate-400 block">Coluna em Atraso Máximo:</span>
                             <span class="text-emerald-400 font-bold text-xs">${colunaSugerida}ª Coluna</span>
                         </div>
                     </div>
