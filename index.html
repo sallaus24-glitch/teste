@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analisador Preditivo ULTRA PRO - Sniper</title>
+    <title>Analisador Preditivo ULTRA PRO - Segmentos</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Ícones Lucide -->
@@ -18,9 +18,9 @@
     <div class="w-full max-w-md bg-slate-900 rounded-2xl shadow-2xl p-4 border border-slate-800">
         <header class="text-center mb-3">
             <h1 class="text-lg font-bold text-emerald-400 flex items-center justify-center gap-2">
-                <i data-lucide="crosshair" class="w-5 h-5"></i> Analisador ULTRA PRO (Sniper)
+                <i data-lucide="zap" class="w-5 h-5"></i> Analisador ULTRA PRO
             </h1>
-            <p class="text-[11px] text-slate-400">Filtro de Convergência & Sugestão de 3 Alvos</p>
+            <p class="text-[11px] text-slate-400">Análise Individual de Segmentos & Gatilhos de Força</p>
         </header>
 
         <!-- Visor do Número Atual Sendo Digitado -->
@@ -51,7 +51,7 @@
             <button onclick="digitar(0)" class="bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700 text-emerald-400 font-bold py-2.5 rounded-lg text-base transition">0</button>
         </div>
 
-        <!-- Painel Visual Reduzido (Grade 3x3 + Zero) -->
+        <!-- Mapa do Último Número e Colunas -->
         <div class="mb-3 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
             <div class="flex justify-between items-center mb-1.5">
                 <span class="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
@@ -94,13 +94,13 @@
             </div>
         </div>
 
-        <!-- Painel de Previsão por Convergência e Alvos -->
+        <!-- Painel de Previsão por Segmentos Individuais -->
         <div class="bg-slate-950 border border-emerald-500/40 rounded-xl p-3.5 mb-3 shadow-inner shadow-emerald-950/30">
-            <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <i data-lucide="target" class="w-4 h-4"></i> Alvos de Alta Convergência
+            <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                <i data-lucide="cpu" class="w-4 h-4"></i> Análise de Segmentos Individuais
             </h2>
             <div id="painelPrevisao" class="text-center text-slate-300 text-xs py-1">
-                Insira pelo menos 6 números para ativar o filtro de convergência sniper.
+                Insira pelo menos 5 números para ativar os indicadores de força por segmento.
             </div>
         </div>
 
@@ -210,34 +210,46 @@
                 }
             }
 
-            let confPercent = Math.min(Math.round((total / 15) * 100), 100);
+            let confPercent = Math.min(Math.round((total / 12) * 100), 100);
             const barra = document.getElementById('barraConfiabilidade');
             const labelConf = document.getElementById('labelConfiabilidade');
             
             barra.style.width = confPercent + '%';
             if (confPercent < 40) {
                 barra.className = "bg-amber-500 h-full transition-all duration-300";
-                labelConf.innerText = `${confPercent}% (Amostra Baixa)`;
+                labelConf.innerText = `${confPercent}% (Amostra Inicial)`;
             } else if (confPercent < 80) {
                 barra.className = "bg-blue-500 h-full transition-all duration-300";
-                labelConf.innerText = `${confPercent}% (Em Análise)`;
+                labelConf.innerText = `${confPercent}% (Em Calibragem)`;
             } else {
                 barra.className = "bg-emerald-500 h-full transition-all duration-300";
                 labelConf.innerText = `${confPercent}% (Alta Confiabilidade)`;
             }
 
-            analisarConvergenciaSniper();
+            analisarSegmentosIndividuais();
         }
 
-        function analisarConvergenciaSniper() {
+        function analisarSegmentosIndividuais() {
             const painel = document.getElementById('painelPrevisao');
             
-            if (historicoSessao.length < 6) {
-                painel.innerHTML = `<span class="text-slate-400 italic text-xs">Aguardando dados... Faltam ${6 - historicoSessao.length} entradas para calibrar o filtro sniper.</span>`;
+            if (historicoSessao.length < 5) {
+                painel.innerHTML = `<span class="text-slate-400 italic text-xs">Aguardando dados... Faltam ${5 - historicoSessao.length} giros para ativar os indicadores de força.</span>`;
                 return;
             }
 
-            // 1. Calcular atrasos de faixa (Altos vs Baixos)
+            // 1. ANÁLISE DE COR (Vermelho vs Preto)
+            let atrasoVermelho = 0, atrasoPreto = 0;
+            historicoSessao.slice().reverse().forEach((n, idx) => {
+                if (n > 0) {
+                    let c = obterCor(n);
+                    if (c === 'Vermelho' && atrasoVermelho === 0) atrasoVermelho = idx;
+                    if (c === 'Preto' && atrasoPreto === 0) atrasoPreto = idx;
+                }
+            });
+            let corMaisForte = atrasoVermelho > atrasoPreto ? "Vermelho 🟥" : "Preto ⬛";
+            let forcaCor = Math.abs(atrasoVermelho - atrasoPreto) >= 2 ? " 🔥" : "";
+
+            // 2. ANÁLISE DE ALTO E BAIXO (1-18 vs 19-36)
             let atrasoBaixo = 0, atrasoAlto = 0;
             historicoSessao.slice().reverse().forEach((n, idx) => {
                 if (n > 0) {
@@ -245,79 +257,74 @@
                     if (n > 18 && atrasoAlto === 0) atrasoAlto = idx;
                 }
             });
+            let faixaForte = atrasoAlto > atrasoBaixo ? "Altos (19-36)" : "Baixos (1-18)";
+            let forcaFaixa = Math.abs(atrasoAlto - atrasoBaixo) >= 2 ? " ⚡" : "";
 
-            // 2. Tendência Imediata (últimos 3 giros)
-            let ultimos3 = historicoSessao.slice(-3);
-            let mediaUltimos3 = ultimos3.reduce((a, b) => a + b, 0) / ultimos3.length;
-            let tendenciaImediataAltos = mediaUltimos3 > 18;
-
-            // 3. Verificação de Convergência (Atraso e Momento Imediato concordam?)
-            let atrasoPuxaAlto = atrasoAlto > atrasoBaixo;
-            let temConvergencia = (atrasoPuxaAlto === tendenciaImediataAltos);
-
-            let faixaAlvo = atrasoPuxaAlto ? "Altos (19 a 36)" : "Baixos (1 a 18)";
-            
-            // Atraso de Cores
-            let atrasoVermelho = 0, atrasoPreto = 0;
+            // 3. ANÁLISE DE PAR / ÍMPAR
+            let atrasoPar = 0, atrasoImpar = 0;
             historicoSessao.slice().reverse().forEach((n, idx) => {
                 if (n > 0) {
-                    let cor = obterCor(n);
-                    if (cor === 'Vermelho' && atrasoVermelho === 0) atrasoVermelho = idx;
-                    if (cor === 'Preto' && atrasoPreto === 0) atrasoPreto = idx;
+                    if (n % 2 === 0 && atrasoPar === 0) atrasoPar = idx;
+                    if (n % 2 !== 0 && atrasoImpar === 0) atrasoImpar = idx;
                 }
             });
-            let corAlvo = atrasoVermelho > atrasoPreto ? "Vermelho 🟥" : "Preto ⬛";
+            let paridadeForte = atrasoPar > atrasoImpar ? "Par" : "Ímpar";
+            let forcaParidade = Math.abs(atrasoPar - atrasoImpar) >= 2 ? " 🔥" : "";
 
-            // 4. Seleção de 3 Números Alvo baseados no déficit e na faixa de convergência
-            // Filtramos números de 1 a 36 que coincidem com a faixa em déficit e que não saíram muito recentemente
-            let numerosCandidatos = [];
-            for (let i = 1; i <= 36; i++) {
-                let eAlto = i > 18;
-                if ((atrasoPuxaAlto && eAlto) || (!atrasoPuxaAlto && !eAlto)) {
-                    if (!historicoSessao.slice(-4).includes(i)) {
-                        numerosCandidatos.push(i);
-                    }
+            // 4. ANÁLISE DE COLUNAS (1ª, 2ª, 3ª)
+            let atrasoCols = [0, 0, 0];
+            historicoSessao.slice().reverse().forEach((n, idx) => {
+                if (n > 0) {
+                    let col = (n % 3 === 0) ? 3 : n % 3;
+                    if (atrasoCols[col - 1] === 0) atrasoCols[col - 1] = idx;
                 }
-            }
-            // Embaralhar levemente ou pegar os 3 primeiros com base no índice atual para consistência
-            let sugestaoNumeros = numerosCandidatos.slice(0, 3);
-            if (sugestaoNumeros.length < 3) sugestaoNumeros = [5, 17, 32]; // fallback seguro
+            });
+            let maxColAtraso = Math.max(...atrasoCols);
+            let colSugeridaIdx = atrasoCols.indexOf(maxColAtraso);
+            let colunaForte = `${colSugeridaIdx + 1}ª Coluna`;
+            let forcaColuna = maxColAtraso >= 3 ? " ⚡" : "";
 
-            if (!temConvergencia) {
-                painel.innerHTML = `
-                    <div class="bg-amber-950/30 border border-amber-800/40 p-2.5 rounded-lg text-center space-y-1">
-                        <span class="text-[10px] text-amber-400 font-bold uppercase tracking-wider block">⚠️ Mercado Divergente</span>
-                        <span class="text-slate-300 text-xs">Atraso estatístico e tendência imediata discordam. <strong class="text-white">Aguardando alinhamento do ciclo...</strong></span>
-                    </div>
-                `;
-                return;
-            }
+            // 5. ANÁLISE DE QUARTIS (Q1:1-9, Q2:10-18, Q3:19-27, Q4:28-36)
+            let atrasoQuartis = [0, 0, 0, 0];
+            historicoSessao.slice().reverse().forEach((n, idx) => {
+                if (n > 0) {
+                    let q = n <= 9 ? 0 : (n <= 18 ? 1 : (n <= 27 ? 2 : 3));
+                    if (atrasoQuartis[q] === 0) atrasoQuartis[q] = idx;
+                }
+            });
+            let maxQ Atraso = Math.max(...atrasoQuartis);
+            let qSugeridoIdx = atrasoQuartis.indexOf(maxQ Atraso);
+            let nomesQ = ["Q1 (1-9)", "Q2 (10-18)", "Q3 (19-27)", "Q4 (28-36)"];
+            let quartilForte = nomesQ[qSugeridoIdx];
+            let forcaQuartil = maxQ Atraso >= 4 ? " 🔥" : "";
 
             painel.innerHTML = `
                 <div class="space-y-2 text-left text-xs">
-                    <div class="bg-emerald-950/40 border border-emerald-800/50 p-2 rounded-lg text-center">
-                        <span class="text-[10px] text-emerald-400 block uppercase tracking-wider font-semibold">🎯 Alta Convergencia Detectada</span>
-                        <span class="text-white font-bold text-xs">Ciclo alinhado para ${faixaAlvo}</span>
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800">
+                            <span class="text-[10px] text-slate-400 block">Cor Dominante:</span>
+                            <span class="text-white font-bold text-xs">${corMaisForte}${forcaCor}</span>
+                        </div>
+                        <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800">
+                            <span class="text-[10px] text-slate-400 block">Faixa (Alto/Baixo):</span>
+                            <span class="text-white font-bold text-xs">${faixaForte}${forcaFaixa}</span>
+                        </div>
                     </div>
 
                     <div class="grid grid-cols-2 gap-1.5">
-                        <div class="bg-slate-900/80 p-2 rounded border border-slate-800">
-                            <span class="text-[10px] text-slate-400 block">Cor Alvo:</span>
-                            <span class="text-white font-bold text-xs">${corAlvo}</span>
+                        <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800">
+                            <span class="text-[10px] text-slate-400 block">Paridade:</span>
+                            <span class="text-white font-bold text-xs">${paridadeForte}${forcaParidade}</span>
                         </div>
-                        <div class="bg-slate-900/80 p-2 rounded border border-slate-800">
-                            <span class="text-[10px] text-slate-400 block">Faixa Principal:</span>
-                            <span class="text-emerald-400 font-bold text-xs">${faixaAlvo}</span>
+                        <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800">
+                            <span class="text-[10px] text-slate-400 block">Coluna em Déficit:</span>
+                            <span class="text-emerald-400 font-bold text-xs">${colunaForte}${forcaColuna}</span>
                         </div>
                     </div>
 
-                    <div class="bg-slate-900/90 p-2.5 rounded-lg border border-emerald-500/30 text-center">
-                        <span class="text-[10px] text-emerald-400 block uppercase font-semibold mb-1">Sugestão de 3 Números Prováveis (Alvos):</span>
-                        <div class="flex justify-center gap-2">
-                            <span class="bg-slate-950 border border-slate-700 text-emerald-400 font-mono font-bold px-3 py-1 rounded text-sm">${sugestaoNumeros[0]}</span>
-                            <span class="bg-slate-950 border border-slate-700 text-emerald-400 font-mono font-bold px-3 py-1 rounded text-sm">${sugestaoNumeros[1]}</span>
-                            <span class="bg-slate-950 border border-slate-700 text-emerald-400 font-mono font-bold px-3 py-1 rounded text-sm">${sugestaoNumeros[2]}</span>
-                        </div>
+                    <div class="bg-slate-900/90 p-2 rounded-lg border border-emerald-500/30 text-center">
+                        <span class="text-[10px] text-slate-400 block uppercase font-semibold">Quartil de Maior Pressão (Alvo):</span>
+                        <span class="text-emerald-400 font-bold text-sm">${quartilForte}${forcaQuartil}</span>
                     </div>
                 </div>
             `;
