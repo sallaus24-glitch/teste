@@ -292,11 +292,11 @@
                     if (atrasoQuartis[q] === 0) atrasoQuartis[q] = idx;
                 }
             });
-            let maxQ Atraso = Math.max(...atrasoQuartis);
-            let qSugeridoIdx = atrasoQuartis.indexOf(maxQ Atraso);
+            let maxQAtraso = Math.max(...atrasoQuartis);
+            let qSugeridoIdx = atrasoQuartis.indexOf(maxQAtraso);
             let nomesQ = ["Q1 (1-9)", "Q2 (10-18)", "Q3 (19-27)", "Q4 (28-36)"];
             let quartilForte = nomesQ[qSugeridoIdx];
-            let forcaQuartil = maxQ Atraso >= 4 ? " 🔥" : "";
+            let forcaQuartil = maxQAtraso >= 4 ? " 🔥" : "";
 
             painel.innerHTML = `
                 <div class="space-y-2 text-left text-xs">
