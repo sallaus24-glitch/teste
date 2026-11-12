@@ -1,624 +1,348 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Analisador Preditivo ULTRA PRO</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analisador Preditivo ULTRA PRO - Segmentos</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Ícones Lucide -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <meta name="theme-color" content="#059669" />
+    <!-- Supabase Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Manifesto para PWA -->
+    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Analisador%20Preditivo%22%2C%22short_name%22%3A%22Analisador%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23020617%22%2C%22theme_color%22%3A%22%23059669%22%2C%22icons%22%3A%5B%5D%7D">
 </head>
-<body class="bg-[#050b16] text-slate-100 min-h-screen flex items-center justify-center p-3">
-    <div class="w-full max-w-md bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950 rounded-3xl shadow-[0_0_35px_rgba(16,185,129,0.18)] border border-emerald-500/20 overflow-hidden">
-        <header class="px-4 pt-4 pb-3 border-b border-slate-800/80 bg-gradient-to-r from-emerald-950/30 via-slate-900 to-slate-950">
-            <div class="text-center">
-                <h1 class="text-lg font-black text-emerald-400 flex items-center justify-center gap-2 tracking-[0.2em] uppercase text-[11px]">
-                    <i data-lucide="zap" class="w-4 h-4"></i>
-                    Ultra Pro
-                </h1>
-                <p class="text-[10px] text-slate-400 mt-1 tracking-[0.18em] uppercase">Análise de tendência</p>
-            </div>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center p-3">
+
+    <div class="w-full max-w-md bg-slate-900 rounded-2xl shadow-2xl p-4 border border-slate-800">
+        <header class="text-center mb-3">
+            <h1 class="text-lg font-bold text-emerald-400 flex items-center justify-center gap-2">
+                <i data-lucide="zap" class="w-5 h-5"></i> Analisador ULTRA PRO
+            </h1>
+            <p class="text-[11px] text-slate-400">Análise Individual de Segmentos & Gatilhos de Força</p>
         </header>
 
-        <main class="p-4">
-            <div class="flex gap-2 mb-3">
-                <div id="visorNumero" class="flex-1 min-h-[52px] bg-slate-950/90 border border-emerald-500/20 rounded-2xl px-4 py-2.5 text-center text-2xl font-black font-mono text-emerald-400 flex items-center justify-center tracking-[0.25em] shadow-inner shadow-emerald-950/20">-</div>
-                <button onclick="apagarDigito()" class="bg-slate-800/80 hover:bg-slate-700 text-slate-300 px-3 rounded-2xl border border-slate-700 transition" title="Apagar último número">
-                    <i data-lucide="delete" class="w-5 h-5"></i>
-                </button>
-                <button onclick="confirmarNumero()" class="bg-gradient-to-r from-emerald-500 to-emerald-400 hover:brightness-110 text-white font-bold px-4 rounded-2xl shadow-lg shadow-emerald-900/40 transition text-xs min-w-[80px]">
-                    Inserir
-                </button>
+        <!-- Visor do Número Atual Sendo Digitado -->
+        <div class="flex gap-2 mb-3">
+            <div id="visorNumero" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-center text-xl font-bold font-mono text-emerald-400 flex items-center justify-center tracking-widest min-h-[48px]">
+                -
             </div>
-
-            <div class="grid grid-cols-5 gap-1.5 mb-3 bg-slate-950/60 p-2.5 rounded-2xl border border-slate-800 shadow-inner shadow-slate-950/40">
-                <button onclick="digitar(1)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-xl text-base transition hover:scale-[1.02]">1</button>
-                <button onclick="digitar(2)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-xl text-base transition hover:scale-[1.02]">2</button>
-                <button onclick="digitar(3)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-xl text-base transition hover:scale-[1.02]">3</button>
-                <button onclick="digitar(4)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-xl text-base transition hover:scale-[1.02]">4</button>
-                <button onclick="digitar(5)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-xl text-base transition hover:scale-[1.02]">5</button>
-
-                <button onclick="digitar(6)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-xl text-base transition hover:scale-[1.02]">6</button>
-                <button onclick="digitar(7)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-xl text-base transition hover:scale-[1.02]">7</button>
-                <button onclick="digitar(8)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-xl text-base transition hover:scale-[1.02]">8</button>
-                <button onclick="digitar(9)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-xl text-base transition hover:scale-[1.02]">9</button>
-                <button onclick="digitar(0)" class="bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-700 text-emerald-400 font-bold py-2.5 rounded-xl text-base transition hover:scale-[1.02]">0</button>
-            </div>
-
-            <div class="mb-3 bg-slate-950/60 p-2.5 rounded-2xl border border-slate-800 shadow-inner shadow-slate-950/40">
-                <div class="flex justify-between items-center mb-2">
-                    <span class="text-[11px] font-semibold text-slate-400 flex items-center gap-1 uppercase tracking-[0.16em]">
-                        <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i>
-                        Mapa
-                    </span>
-                    <span id="badgeUltimoMapa" class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full font-mono">-</span>
-                </div>
-
-                <div class="grid grid-cols-4 gap-1 text-center text-xs font-bold">
-                    <div class="bg-emerald-950/50 border border-emerald-800/60 rounded-xl p-1.5 flex flex-col justify-center items-center text-emerald-400 shadow-inner shadow-emerald-900/20">
-                        <span class="text-[8px] text-slate-500">ZERO</span>
-                        <span class="text-xs">0</span>
-                    </div>
-                    <div class="col-span-3 grid grid-cols-3 gap-1">
-                        <div id="grid-col-1" class="bg-slate-900 border border-slate-800 rounded-xl p-1.5 flex flex-col justify-center">
-                            <span class="text-[8px] text-slate-500">COL 1</span>
-                            <span class="text-slate-300">-</span>
-                        </div>
-                        <div id="grid-col-2" class="bg-slate-900 border border-slate-800 rounded-xl p-1.5 flex flex-col justify-center">
-                            <span class="text-[8px] text-slate-500">COL 2</span>
-                            <span class="text-slate-300">-</span>
-                        </div>
-                        <div id="grid-col-3" class="bg-slate-900 border border-slate-800 rounded-xl p-1.5 flex flex-col justify-center">
-                            <span class="text-[8px] text-slate-500">COL 3</span>
-                            <span class="text-slate-300">-</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mb-3 bg-slate-950 p-2.5 rounded-2xl border border-slate-800 shadow-inner shadow-slate-950/50">
-                <div class="flex justify-between items-center gap-2 text-[11px] mb-1">
-                    <span class="text-slate-400 flex items-center gap-1 uppercase tracking-[0.14em]">
-                        <i data-lucide="gauge" class="w-3.5 h-3.5"></i>
-                        Conf.
-                    </span>
-                    <span id="labelConfiabilidade" class="font-bold text-slate-400">0% (Aguardando dados)</span>
-                </div>
-                <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                    <div id="barraConfiabilidade" class="bg-amber-500 h-full w-0 transition-all duration-300"></div>
-                </div>
-            </div>
-
-            <div class="bg-slate-950 border border-emerald-500/40 rounded-2xl p-3.5 mb-3 shadow-[inset_0_0_20px_rgba(16,185,129,0.08)]">
-                <div class="flex items-center justify-between mb-2.5">
-                    <h2 class="text-[10px] font-bold text-emerald-400 uppercase tracking-[0.2em] flex items-center gap-1.5">
-                        <i data-lucide="cpu" class="w-4 h-4"></i>
-                        Previsão
-                    </h2>
-                    <span id="statusChamada" class="text-[9px] text-slate-400">Standby</span>
-                </div>
-                <div id="painelPrevisao" class="text-center text-slate-300 text-xs py-1">
-                    Aguardando dados suficientes.
-                </div>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
-                <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                    <span class="text-slate-500 block text-[10px] uppercase tracking-[0.12em]">Giros</span>
-                    <span id="statTotal" class="text-base font-bold text-white">0</span>
-                </div>
-                <div class="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
-                    <span class="text-slate-500 block text-[10px] uppercase tracking-[0.12em]">Recentes</span>
-                    <span id="statUltimos" class="text-emerald-400 font-mono font-semibold truncate block text-xs">-</span>
-                </div>
-            </div>
-
-            <button onclick="limparSessao()" class="w-full bg-gradient-to-r from-rose-950/60 to-rose-900/40 hover:brightness-110 border border-rose-800/50 text-rose-300 font-semibold py-2 rounded-2xl transition flex items-center justify-center gap-2 text-xs">
-                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
-                Limpar Sessão
+            <button onclick="apagarDigito()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 rounded-xl transition border border-slate-700 flex items-center justify-center" title="Apagar">
+                <i data-lucide="delete" class="w-5 h-5"></i>
             </button>
-        </main>
+            <button onclick="confirmarNumero()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 rounded-xl transition shadow-lg shadow-emerald-900/40 flex items-center justify-center text-xs">
+                Inserir
+            </button>
+        </div>
+
+        <!-- Teclado Tátil Personalizado (0 a 9) -->
+        <div class="grid grid-cols-5 gap-1.5 mb-3 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+            <button onclick="digitar(1)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">1</button>
+            <button onclick="digitar(2)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">2</button>
+            <button onclick="digitar(3)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">3</button>
+            <button onclick="digitar(4)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">4</button>
+            <button onclick="digitar(5)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">5</button>
+            
+            <button onclick="digitar(6)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">6</button>
+            <button onclick="digitar(7)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">7</button>
+            <button onclick="digitar(8)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">8</button>
+            <button onclick="digitar(9)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">9</button>
+            <button onclick="digitar(0)" class="bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700 text-emerald-400 font-bold py-2.5 rounded-lg text-base transition">0</button>
+        </div>
+
+        <!-- Mapa do Último Número e Colunas -->
+        <div class="mb-3 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+            <div class="flex justify-between items-center mb-1.5">
+                <span class="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
+                    <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i> Mapa do Último Número
+                </span>
+                <span id="badgeUltimoMapa" class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">-</span>
+            </div>
+            <div class="grid grid-cols-4 gap-1 text-center text-xs font-bold">
+                <div id="grid-0" class="bg-emerald-950/50 border border-emerald-800/60 rounded p-1.5 flex flex-col justify-center items-center text-emerald-400">
+                    <span class="text-[8px] text-slate-500">ZERO</span>
+                    <span class="text-xs">0</span>
+                </div>
+                <div class="col-span-3 grid grid-cols-3 gap-1">
+                    <div id="grid-col-1" class="bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center">
+                        <span class="text-[8px] text-slate-500">COL 1</span>
+                        <span class="text-slate-300">-</span>
+                    </div>
+                    <div id="grid-col-2" class="bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center">
+                        <span class="text-[8px] text-slate-500">COL 2</span>
+                        <span class="text-slate-300">-</span>
+                    </div>
+                    <div id="grid-col-3" class="bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center">
+                        <span class="text-[8px] text-slate-500">COL 3</span>
+                        <span class="text-slate-300">-</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Barra de Confiabilidade da Amostra -->
+        <div class="mb-3 bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+            <div class="flex justify-between text-[11px] mb-1">
+                <span class="text-slate-400 flex items-center gap-1">
+                    <i data-lucide="gauge" class="w-3.5 h-3.5"></i> Confiabilidade da Amostra
+                </span>
+                <span id="labelConfiabilidade" class="font-bold text-slate-400">0% (Aguardando dados)</span>
+            </div>
+            <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                <div id="barraConfiabilidade" class="bg-amber-500 h-full w-0 transition-all duration-300"></div>
+            </div>
+        </div>
+
+        <!-- Painel de Previsão por Segmentos Individuais -->
+        <div class="bg-slate-950 border border-emerald-500/40 rounded-xl p-3.5 mb-3 shadow-inner shadow-emerald-950/30">
+            <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                <i data-lucide="cpu" class="w-4 h-4"></i> Análise de Segmentos Individuais
+            </h2>
+            <div id="painelPrevisao" class="text-center text-slate-300 text-xs py-1">
+                Insira pelo menos 5 números para ativar os indicadores de força por segmento.
+            </div>
+        </div>
+
+        <!-- Estatísticas da Sessão Atual -->
+        <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
+            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                <span class="text-slate-500 block text-[10px]">Total de Giros:</span>
+                <span id="statTotal" class="text-sm font-bold text-white">0</span>
+            </div>
+            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+                <span class="text-slate-500 block text-[10px]">Últimos Números:</span>
+                <span id="statUltimos" class="text-emerald-400 font-mono font-semibold truncate block text-xs">-</span>
+            </div>
+        </div>
+
+        <!-- Botão de Reiniciar Sessão -->
+        <button onclick="limparSessao()" class="w-full bg-rose-950/40 hover:bg-rose-900/40 border border-rose-800/50 text-rose-300 font-semibold py-2 rounded-xl transition flex items-center justify-center gap-2 text-xs">
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Limpar Sessão / Nova Linha de Raciocínio
+        </button>
     </div>
 
     <script>
         lucide.createIcons();
 
-        const STORAGE_KEY = 'analise_ultra_pro_historico';
-        const numerosVermelhos = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+        const SUPABASE_URL = 'SUA_SUPABASE_URL';
+        const SUPABASE_ANON_KEY = 'SUA_SUPABASE_ANON_KEY';
+        const supabaseClient = (SUPABASE_URL !== 'SUA_SUPABASE_URL') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
-        let historicoSessao = carregarHistorico();
+        let historicoSessao = [];
         let sessionId = 'sessao_' + Date.now();
-        let entradaAtual = '';
+        let entradaAtual = "";
 
-        function carregarHistorico() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) return [];
-                const parsed = JSON.parse(raw);
-                return Array.isArray(parsed) ? parsed.filter(n => Number.isInteger(n) && n >= 0 && n <= 36) : [];
-            } catch (error) {
-                console.warn('Erro ao carregar histórico local:', error);
-                return [];
-            }
-        }
-
-        function salvarHistorico() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(historicoSessao));
-        }
+        const numerosVermelhos = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
 
         function obterCor(n) {
             if (n === 0) return 'Verde';
             return numerosVermelhos.includes(n) ? 'Vermelho' : 'Preto';
         }
 
-        function obterFaixa(n) {
-            if (n === 0) return 'Zero';
-            return n <= 18 ? 'Baixos (1-18)' : 'Altos (19-36)';
-        }
-
-        function obterParidade(n) {
-            if (n === 0) return 'Zero';
-            return n % 2 === 0 ? 'Par' : 'Ímpar';
-        }
-
-        function obterColuna(n) {
-            if (n === 0) return 'Zero';
-            const coluna = n % 3 === 0 ? 3 : n % 3;
-            return `Coluna ${coluna}`;
-        }
-
-        function obterQuartil(n) {
-            if (n === 0) return 'Zero';
-            if (n <= 9) return 'Q1 (1-9)';
-            if (n <= 18) return 'Q2 (10-18)';
-            if (n <= 27) return 'Q3 (19-27)';
-            return 'Q4 (28-36)';
-        }
-
         function digitar(num) {
             if (entradaAtual.length >= 2) {
-                entradaAtual = String(num);
+                entradaAtual = num.toString();
             } else {
-                entradaAtual += String(num);
+                entradaAtual += num.toString();
             }
 
-            const valor = parseInt(entradaAtual, 10);
-            if (valor > 36) {
-                entradaAtual = String(num);
+            let valInt = parseInt(entradaAtual);
+            if (valInt > 36) {
+                entradaAtual = num.toString();
             }
 
-            document.getElementById('visorNumero').innerText = entradaAtual || '-';
+            document.getElementById('visorNumero').innerText = entradaAtual;
         }
 
         function apagarDigito() {
-            entradaAtual = '';
-            document.getElementById('visorNumero').innerText = '-';
+            entradaAtual = "";
+            document.getElementById('visorNumero').innerText = "-";
         }
 
-        function confirmarNumero() {
-            if (entradaAtual === '') return;
+        async function confirmarNumero() {
+            if (entradaAtual === "") return;
+            const valor = parseInt(entradaAtual);
 
-            const valor = parseInt(entradaAtual, 10);
-            if (Number.isNaN(valor) || valor < 0 || valor > 36) {
-                alert('Número inválido. Digite um valor entre 0 e 36.');
+            if (isNaN(valor) || valor < 0 || valor > 36) {
+                alert('Número inválido. Digite de 0 a 36.');
                 apagarDigito();
                 return;
             }
 
             historicoSessao.push(valor);
-            salvarHistorico();
             apagarDigito();
+
             atualizarInterface(valor);
-        }
 
-        function calcularConfiabilidade() {
-            const total = historicoSessao.length;
-            if (total === 0) return { valor: 0, texto: '0% (Aguardando dados)', classe: 'bg-amber-500' };
-
-            const valor = Math.min(Math.round((total / 12) * 100), 100);
-
-            if (valor < 40) {
-                return { valor, texto: `${valor}% (Amostra Inicial)`, classe: 'bg-amber-500' };
+            if (supabaseClient) {
+                try {
+                    await supabaseClient.from('historico_analise').insert([
+                        { session_id: sessionId, numero: valor, criado_em: new Date() }
+                    ]);
+                } catch (e) {
+                    console.error('Erro ao sincronizar:', e);
+                }
             }
-
-            if (valor < 80) {
-                return { valor, texto: `${valor}% (Em Calibragem)`, classe: 'bg-blue-500' };
-            }
-
-            return { valor, texto: `${valor}% (Alta Confiabilidade)`, classe: 'bg-emerald-500' };
-        }
-
-        function renderMapaUltimoNumero(ultimoValor) {
-            const badge = document.getElementById('badgeUltimoMapa');
-            if (ultimoValor === undefined) {
-                badge.innerText = '-';
-                return;
-            }
-
-            const cor = obterCor(ultimoValor);
-            const badgeClass = cor === 'Vermelho'
-                ? 'bg-rose-900/80 text-rose-300'
-                : cor === 'Preto'
-                    ? 'bg-slate-800 text-slate-300'
-                    : 'bg-emerald-900 text-emerald-300';
-
-            badge.innerHTML = `#${ultimoValor} <span class="text-[9px] px-1 rounded ${badgeClass}">${cor}</span>`;
-
-            [1, 2, 3].forEach((col) => {
-                const el = document.getElementById(`grid-col-${col}`);
-                el.className = 'bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center';
-                el.innerHTML = `<span class="text-[8px] text-slate-500">COL ${col}</span><span class="text-slate-300">-</span>`;
-            });
-
-            if (ultimoValor > 0) {
-                const colAtual = ultimoValor % 3 === 0 ? 3 : ultimoValor % 3;
-                const el = document.getElementById(`grid-col-${colAtual}`);
-                el.className = 'bg-emerald-950/70 border border-emerald-600 rounded p-1.5 flex flex-col justify-center text-emerald-400 font-bold';
-                el.innerHTML = `<span class="text-[8px] text-slate-500">COL ${colAtual}</span><span>${ultimoValor}</span>`;
-            }
-        }
-
-        function getCategoriaResumo() {
-            const total = historicoSessao.length;
-            if (total === 0) return null;
-
-            const recentes = historicoSessao.slice(-18);
-            const analises = [
-                {
-                    label: 'Cor',
-                    opcoes: [
-                        { nome: 'Vermelho', cond: n => obterCor(n) === 'Vermelho' },
-                        { nome: 'Preto', cond: n => obterCor(n) === 'Preto' },
-                        { nome: 'Verde', cond: n => obterCor(n) === 'Verde' }
-                    ]
-                },
-                {
-                    label: 'Faixa',
-                    opcoes: [
-                        { nome: 'Baixos (1-18)', cond: n => obterFaixa(n) === 'Baixos (1-18)' },
-                        { nome: 'Altos (19-36)', cond: n => obterFaixa(n) === 'Altos (19-36)' }
-                    ]
-                },
-                {
-                    label: 'Paridade',
-                    opcoes: [
-                        { nome: 'Par', cond: n => obterParidade(n) === 'Par' },
-                        { nome: 'Ímpar', cond: n => obterParidade(n) === 'Ímpar' },
-                        { nome: 'Zero', cond: n => obterParidade(n) === 'Zero' }
-                    ]
-                },
-                {
-                    label: 'Coluna',
-                    opcoes: [
-                        { nome: 'Coluna 1', cond: n => obterColuna(n) === 'Coluna 1' },
-                        { nome: 'Coluna 2', cond: n => obterColuna(n) === 'Coluna 2' },
-                        { nome: 'Coluna 3', cond: n => obterColuna(n) === 'Coluna 3' }
-                    ]
-                },
-                {
-                    label: 'Quartil',
-                    opcoes: [
-                        { nome: 'Q1 (1-9)', cond: n => obterQuartil(n) === 'Q1 (1-9)' },
-                        { nome: 'Q2 (10-18)', cond: n => obterQuartil(n) === 'Q2 (10-18)' },
-                        { nome: 'Q3 (19-27)', cond: n => obterQuartil(n) === 'Q3 (19-27)' },
-                        { nome: 'Q4 (28-36)', cond: n => obterQuartil(n) === 'Q4 (28-36)' }
-                    ]
-                }
-            ];
-
-            return analises.map((grupo) => {
-                const pontuacao = grupo.opcoes.map((opcao) => {
-                    const ocorrencias = recentes.filter((n) => opcao.cond(n)).length;
-                    const ultimaOcorrencia = [...recentes].reverse().findIndex((n) => opcao.cond(n));
-                    const recencia = ultimaOcorrencia === -1 ? 99 : ultimaOcorrencia;
-                    let streak = 0;
-                    for (let i = recentes.length - 1; i >= 0; i--) {
-                        if (opcao.cond(recentes[i])) streak++;
-                        else break;
-                    }
-
-                    const indices = historicoSessao.map((n, idx) => (opcao.cond(n) ? idx : null)).filter(v => v !== null);
-                    let gapMedia = 99;
-                    if (indices.length > 1) {
-                        const gaps = [];
-                        for (let i = 1; i < indices.length; i++) {
-                            gaps.push(indices[i] - indices[i - 1]);
-                        }
-                        gapMedia = gaps.reduce((sum, val) => sum + val, 0) / gaps.length;
-                    }
-
-                    const score = ocorrencias * 12 + streak * 10 + Math.max(0, 8 - recencia) * 4 + (gapMedia < 99 ? Math.max(0, 10 - gapMedia) * 2 : 0);
-
-                    return {
-                        nome: opcao.nome,
-                        score,
-                        ocorrencias,
-                        recencia,
-                        streak,
-                        gapMedia
-                    };
-                }).sort((a, b) => b.score - a.score);
-
-                return {
-                    label: grupo.label,
-                    dominante: pontuacao[0],
-                    todas: pontuacao
-                };
-            });
-        }
-
-        function gerarSugestaoInteligente() {
-            const resumo = getCategoriaResumo();
-            if (!resumo) return { top: [], explicacao: 'Sem dados suficientes' };
-
-            const pesosCategoria = {
-                Cor: 12,
-                Faixa: 10,
-                Paridade: 9,
-                Coluna: 10,
-                Quartil: 11
-            };
-
-            const prioridade = {};
-            resumo.forEach((grupo) => {
-                const item = grupo.dominante;
-                prioridade[grupo.label] = item.nome;
-            });
-
-            const recentes = historicoSessao.slice(-12);
-            const ultimo = historicoSessao[historicoSessao.length - 1];
-            const penultimo = historicoSessao[historicoSessao.length - 2];
-            const antepenultimo = historicoSessao[historicoSessao.length - 3];
-
-            const candidatos = [];
-            for (let numero = 0; numero <= 36; numero++) {
-                let score = 0;
-
-                const corAtual = obterCor(numero);
-                const faixaAtual = obterFaixa(numero);
-                const parAtual = obterParidade(numero);
-                const colunaAtual = obterColuna(numero);
-                const quartilAtual = obterQuartil(numero);
-
-                const mapaCategoria = {
-                    Cor: corAtual,
-                    Faixa: faixaAtual,
-                    Paridade: parAtual,
-                    Coluna: colunaAtual,
-                    Quartil: quartilAtual
-                };
-
-                Object.keys(mapaCategoria).forEach((categoria) => {
-                    const valor = mapaCategoria[categoria];
-                    const grupo = resumo.find((item) => item.label === categoria);
-                    if (!grupo) return;
-
-                    const item = grupo.todas.find((opt) => opt.nome === valor) || grupo.dominante;
-                    score += (item.score || 0) * (pesosCategoria[categoria] || 8);
-                });
-
-                if (ultimo !== undefined) {
-                    const distancia = Math.abs(numero - ultimo);
-                    if (distancia <= 2) score += 18;
-                    if (distancia <= 4) score += 10;
-                    if (distancia >= 12) score -= 6;
-                }
-
-                if (penultimo !== undefined && ultimo !== undefined) {
-                    const delta = ultimo - penultimo;
-                    if (delta !== 0) {
-                        if (Math.abs(numero - ultimo) <= 2 && (numero - ultimo) * delta > 0) score += 12;
-                        if (Math.abs(numero - penultimo) <= 2 && (numero - penultimo) * delta > 0) score += 8;
-                    }
-                }
-
-                if (antepenultimo !== undefined && penultimo !== undefined && ultimo !== undefined) {
-                    const seq = [antepenultimo, penultimo, ultimo];
-                    if (seq.every((n) => n % 2 === seq[0] % 2)) {
-                        if (numero % 2 === seq[0] % 2) score += 10;
-                    }
-                    if (seq.every((n) => obterFaixa(n) === obterFaixa(seq[0]))) {
-                        if (obterFaixa(numero) === obterFaixa(seq[0])) score += 10;
-                    }
-                }
-
-                if (recentes.length >= 3) {
-                    const mesmaCor = recentes.filter((n) => obterCor(n) === obterCor(ultimo)).length;
-                    if (obterCor(numero) === obterCor(ultimo)) score += mesmaCor * 4;
-
-                    const mesmaFaixa = recentes.filter((n) => obterFaixa(n) === obterFaixa(ultimo)).length;
-                    if (obterFaixa(numero) === obterFaixa(ultimo)) score += mesmaFaixa * 4;
-                }
-
-                const repeatCount = historicoSessao.filter((n) => n === numero).length;
-                if (repeatCount > 0) score -= repeatCount * 12;
-
-                const visivel = historicoSessao.includes(numero);
-                if (!visivel) score += 3;
-
-                const ultimoPar = historicoSessao.slice(-6);
-                if (ultimoPar.length >= 3 && ultimoPar.every((n) => n % 2 === ultimoPar[0] % 2)) {
-                    if (numero % 2 === ultimoPar[0] % 2) score += 8;
-                }
-
-                const ultimaFaixa = historicoSessao.slice(-4).map((n) => obterFaixa(n));
-                if (ultimaFaixa.length >= 2 && ultimaFaixa.every((f) => f === ultimaFaixa[0])) {
-                    if (obterFaixa(numero) === ultimaFaixa[0]) score += 8;
-                }
-
-                const ultimaColuna = historicoSessao.slice(-5).map((n) => obterColuna(n));
-                if (ultimaColuna.length >= 3 && ultimaColuna.filter((c) => c === ultimaColuna[0]).length >= 2) {
-                    if (obterColuna(numero) === ultimaColuna[0]) score += 8;
-                }
-
-                if (numero === 0) score += 2;
-
-                candidatos.push({ numero, score });
-            }
-
-            const top = candidatos
-                .sort((a, b) => b.score - a.score)
-                .slice(0, 5)
-                .filter((item) => item.score > 0);
-
-            const melhor = top[0];
-            const explicacao = melhor
-                ? `${melhor.numero} combina melhor as tendências recentes de ${Object.values(prioridade).join(' • ')}`
-                : 'Sem sugestão';
-
-            return { top, explicacao };
-        }
-
-        function obterProximoSegmentoPossivel() {
-            const resumo = getCategoriaResumo();
-            if (!resumo) return null;
-
-            const categorias = resumo.map((item) => ({
-                categoria: item.label,
-                valor: item.dominante.nome,
-                score: item.dominante.score,
-                ocorrencias: item.dominante.ocorrencias
-            }));
-
-            const melhor = categorias.sort((a, b) => b.score - a.score)[0];
-            return {
-                categoria: melhor.categoria,
-                valor: melhor.valor,
-                score: melhor.score,
-                texto: `${melhor.valor} (${melhor.categoria})`
-            };
-        }
-
-        function analisarSegmentosIndividuais() {
-            const painel = document.getElementById('painelPrevisao');
-            const statusChamada = document.getElementById('statusChamada');
-
-            if (historicoSessao.length < 5) {
-                statusChamada.textContent = 'Standby';
-                painel.innerHTML = '<span class="text-slate-400 italic text-xs">Aguardando dados... Faltam ' + (5 - historicoSessao.length) + ' giros para ativar os indicadores.</span>';
-                return;
-            }
-
-            const resumo = getCategoriaResumo();
-            const cor = resumo.find((item) => item.label === 'Cor');
-            const faixa = resumo.find((item) => item.label === 'Faixa');
-            const paridade = resumo.find((item) => item.label === 'Paridade');
-            const coluna = resumo.find((item) => item.label === 'Coluna');
-            const quartil = resumo.find((item) => item.label === 'Quartil');
-
-            const destaque = [
-                cor.dominante,
-                faixa.dominante,
-                paridade.dominante,
-                coluna.dominante,
-                quartil.dominante
-            ].sort((a, b) => b.score - a.score)[0];
-
-            const proximoSegmento = obterProximoSegmentoPossivel();
-            const sugestao = gerarSugestaoInteligente();
-            const top3 = sugestao.top.slice(0, 3).map((item) => item.numero).join(' • ') || '—';
-            const maior = sugestao.top[0] ? sugestao.top[0].numero : '—';
-
-            statusChamada.textContent = `Foco: ${destaque.nome}`;
-
-            const textoProximo = proximoSegmento ? `${proximoSegmento.valor} em ${proximoSegmento.categoria}` : 'Sem sugestão';
-
-            painel.innerHTML = `
-                <div class="space-y-2 text-left text-xs">
-                    <div class="bg-slate-900/90 p-2 rounded-lg border border-emerald-500/30 text-center">
-                        <div class="text-[10px] uppercase tracking-wider text-slate-400">Maior tendência</div>
-                        <div class="text-emerald-400 font-black text-xl mt-1">${maior}</div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-1.5">
-                        <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800 text-center">
-                            <div class="text-[10px] text-slate-400">Segmento</div>
-                            <div class="text-white font-bold text-xs mt-1">${textoProximo}</div>
-                        </div>
-                        <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800 text-center">
-                            <div class="text-[10px] text-slate-400">Top 3</div>
-                            <div class="text-emerald-300 font-bold text-xs mt-1">${top3}</div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-3 gap-1.5">
-                        <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 text-center">
-                            <div class="text-[9px] text-slate-400">Cor</div>
-                            <div class="text-white font-bold text-[11px] mt-1">${cor.dominante.nome}</div>
-                        </div>
-                        <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 text-center">
-                            <div class="text-[9px] text-slate-400">Faixa</div>
-                            <div class="text-white font-bold text-[11px] mt-1">${faixa.dominante.nome}</div>
-                        </div>
-                        <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 text-center">
-                            <div class="text-[9px] text-slate-400">Par</div>
-                            <div class="text-white font-bold text-[11px] mt-1">${paridade.dominante.nome}</div>
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-1.5">
-                        <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 text-center">
-                            <div class="text-[9px] text-slate-400">Coluna</div>
-                            <div class="text-white font-bold text-[11px] mt-1">${coluna.dominante.nome}</div>
-                        </div>
-                        <div class="bg-slate-900/90 p-1.5 rounded-lg border border-slate-800 text-center">
-                            <div class="text-[9px] text-slate-400">Quartil</div>
-                            <div class="text-white font-bold text-[11px] mt-1">${quartil.dominante.nome}</div>
-                        </div>
-                    </div>
-                </div>
-            `;
         }
 
         function atualizarInterface(ultimoValor) {
             const total = historicoSessao.length;
             document.getElementById('statTotal').innerText = total;
-            document.getElementById('statUltimos').innerText = historicoSessao.slice(-5).join(', ') || '-';
+            
+            const ultimos5 = historicoSessao.slice(-5).join(', ');
+            document.getElementById('statUltimos').innerText = ultimos5 || '-';
 
-            renderMapaUltimoNumero(ultimoValor);
+            if (ultimoValor !== undefined) {
+                let corUltimo = obterCor(ultimoValor);
+                let badgeCorClass = corUltimo === 'Vermelho' ? 'bg-rose-900/80 text-rose-300' : (corUltimo === 'Preto' ? 'bg-slate-800 text-slate-300' : 'bg-emerald-900 text-emerald-300');
+                document.getElementById('badgeUltimoMapa').innerHTML = `#${ultimoValor} <span class="text-[9px] px-1 rounded ${badgeCorClass}">${corUltimo}</span>`;
+                
+                [1, 2, 3].forEach(c => {
+                    const el = document.getElementById(`grid-col-${c}`);
+                    el.className = "bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center";
+                });
 
-            const confiabilidade = calcularConfiabilidade();
+                if (ultimoValor > 0) {
+                    let colAtual = (ultimoValor % 3 === 0) ? 3 : ultimoValor % 3;
+                    const elAtivo = document.getElementById(`grid-col-${colAtual}`);
+                    elAtivo.className = "bg-emerald-950/70 border border-emerald-600 rounded p-1.5 flex flex-col justify-center text-emerald-400 font-bold";
+                }
+            }
+
+            let confPercent = Math.min(Math.round((total / 12) * 100), 100);
             const barra = document.getElementById('barraConfiabilidade');
-            const label = document.getElementById('labelConfiabilidade');
-            barra.style.width = `${confiabilidade.valor}%`;
-            barra.className = `${confiabilidade.classe} h-full transition-all duration-300`;
-            label.innerText = confiabilidade.texto;
+            const labelConf = document.getElementById('labelConfiabilidade');
+            
+            barra.style.width = confPercent + '%';
+            if (confPercent < 40) {
+                barra.className = "bg-amber-500 h-full transition-all duration-300";
+                labelConf.innerText = `${confPercent}% (Amostra Inicial)`;
+            } else if (confPercent < 80) {
+                barra.className = "bg-blue-500 h-full transition-all duration-300";
+                labelConf.innerText = `${confPercent}% (Em Calibragem)`;
+            } else {
+                barra.className = "bg-emerald-500 h-full transition-all duration-300";
+                labelConf.innerText = `${confPercent}% (Alta Confiabilidade)`;
+            }
 
             analisarSegmentosIndividuais();
         }
 
-        function limparSessao() {
-            if (!confirm('Deseja limpar esta sessão e iniciar uma nova linha de raciocínio?')) {
+        function analisarSegmentosIndividuais() {
+            const painel = document.getElementById('painelPrevisao');
+            
+            if (historicoSessao.length < 5) {
+                painel.innerHTML = `<span class="text-slate-400 italic text-xs">Aguardando dados... Faltam ${5 - historicoSessao.length} giros para ativar os indicadores de força.</span>`;
                 return;
             }
 
-            historicoSessao = [];
-            sessionId = 'sessao_' + Date.now();
-            entradaAtual = '';
-            localStorage.removeItem(STORAGE_KEY);
-            document.getElementById('visorNumero').innerText = '-';
-            document.getElementById('badgeUltimoMapa').innerText = '-';
-            document.getElementById('statusChamada').textContent = 'Standby';
-            document.getElementById('painelPrevisao').innerHTML = '<span class="text-slate-400 italic text-xs">Sessão reiniciada. Aguardando novos dados...</span>';
-
-            [1, 2, 3].forEach((col) => {
-                const el = document.getElementById(`grid-col-${col}`);
-                el.className = 'bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center';
-                el.innerHTML = `<span class="text-[8px] text-slate-500">COL ${col}</span><span class="text-slate-300">-</span>`;
+            // 1. ANÁLISE DE COR (Vermelho vs Preto)
+            let atrasoVermelho = 0, atrasoPreto = 0;
+            historicoSessao.slice().reverse().forEach((n, idx) => {
+                if (n > 0) {
+                    let c = obterCor(n);
+                    if (c === 'Vermelho' && atrasoVermelho === 0) atrasoVermelho = idx;
+                    if (c === 'Preto' && atrasoPreto === 0) atrasoPreto = idx;
+                }
             });
+            let corMaisForte = atrasoVermelho > atrasoPreto ? "Vermelho 🟥" : "Preto ⬛";
+            let forcaCor = Math.abs(atrasoVermelho - atrasoPreto) >= 2 ? " 🔥" : "";
 
-            document.getElementById('statTotal').innerText = '0';
-            document.getElementById('statUltimos').innerText = '-';
-            document.getElementById('labelConfiabilidade').innerText = '0% (Aguardando dados)';
-            document.getElementById('barraConfiabilidade').style.width = '0%';
-            document.getElementById('barraConfiabilidade').className = 'bg-amber-500 h-full w-0 transition-all duration-300';
+            // 2. ANÁLISE DE ALTO E BAIXO (1-18 vs 19-36)
+            let atrasoBaixo = 0, atrasoAlto = 0;
+            historicoSessao.slice().reverse().forEach((n, idx) => {
+                if (n > 0) {
+                    if (n <= 18 && atrasoBaixo === 0) atrasoBaixo = idx;
+                    if (n > 18 && atrasoAlto === 0) atrasoAlto = idx;
+                }
+            });
+            let faixaForte = atrasoAlto > atrasoBaixo ? "Altos (19-36)" : "Baixos (1-18)";
+            let forcaFaixa = Math.abs(atrasoAlto - atrasoBaixo) >= 2 ? " ⚡" : "";
+
+            // 3. ANÁLISE DE PAR / ÍMPAR
+            let atrasoPar = 0, atrasoImpar = 0;
+            historicoSessao.slice().reverse().forEach((n, idx) => {
+                if (n > 0) {
+                    if (n % 2 === 0 && atrasoPar === 0) atrasoPar = idx;
+                    if (n % 2 !== 0 && atrasoImpar === 0) atrasoImpar = idx;
+                }
+            });
+            let paridadeForte = atrasoPar > atrasoImpar ? "Par" : "Ímpar";
+            let forcaParidade = Math.abs(atrasoPar - atrasoImpar) >= 2 ? " 🔥" : "";
+
+            // 4. ANÁLISE DE COLUNAS (1ª, 2ª, 3ª)
+            let atrasoCols = [0, 0, 0];
+            historicoSessao.slice().reverse().forEach((n, idx) => {
+                if (n > 0) {
+                    let col = (n % 3 === 0) ? 3 : n % 3;
+                    if (atrasoCols[col - 1] === 0) atrasoCols[col - 1] = idx;
+                }
+            });
+            let maxColAtraso = Math.max(...atrasoCols);
+            let colSugeridaIdx = atrasoCols.indexOf(maxColAtraso);
+            let colunaForte = `${colSugeridaIdx + 1}ª Coluna`;
+            let forcaColuna = maxColAtraso >= 3 ? " ⚡" : "";
+
+            // 5. ANÁLISE DE QUARTIS (Q1:1-9, Q2:10-18, Q3:19-27, Q4:28-36)
+            let atrasoQuartis = [0, 0, 0, 0];
+            historicoSessao.slice().reverse().forEach((n, idx) => {
+                if (n > 0) {
+                    let q = n <= 9 ? 0 : (n <= 18 ? 1 : (n <= 27 ? 2 : 3));
+                    if (atrasoQuartis[q] === 0) atrasoQuartis[q] = idx;
+                }
+            });
+            let maxQAtraso = Math.max(...atrasoQuartis);
+            let qSugeridoIdx = atrasoQuartis.indexOf(maxQAtraso);
+            let nomesQ = ["Q1 (1-9)", "Q2 (10-18)", "Q3 (19-27)", "Q4 (28-36)"];
+            let quartilForte = nomesQ[qSugeridoIdx];
+            let forcaQuartil = maxQAtraso >= 4 ? " 🔥" : "";
+
+            painel.innerHTML = `
+                <div class="space-y-2 text-left text-xs">
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800">
+                            <span class="text-[10px] text-slate-400 block">Cor Dominante:</span>
+                            <span class="text-white font-bold text-xs">${corMaisForte}${forcaCor}</span>
+                        </div>
+                        <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800">
+                            <span class="text-[10px] text-slate-400 block">Faixa (Alto/Baixo):</span>
+                            <span class="text-white font-bold text-xs">${faixaForte}${forcaFaixa}</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-1.5">
+                        <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800">
+                            <span class="text-[10px] text-slate-400 block">Paridade:</span>
+                            <span class="text-white font-bold text-xs">${paridadeForte}${forcaParidade}</span>
+                        </div>
+                        <div class="bg-slate-900/90 p-2 rounded-lg border border-slate-800">
+                            <span class="text-[10px] text-slate-400 block">Coluna em Déficit:</span>
+                            <span class="text-emerald-400 font-bold text-xs">${colunaForte}${forcaColuna}</span>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900/90 p-2 rounded-lg border border-emerald-500/30 text-center">
+                        <span class="text-[10px] text-slate-400 block uppercase font-semibold">Quartil de Maior Pressão (Alvo):</span>
+                        <span class="text-emerald-400 font-bold text-sm">${quartilForte}${forcaQuartil}</span>
+                    </div>
+                </div>
+            `;
         }
 
-        if (historicoSessao.length > 0) {
-            atualizarInterface(historicoSessao[historicoSessao.length - 1]);
-        } else {
-            document.getElementById('badgeUltimoMapa').innerText = '-';
-            document.getElementById('visorNumero').innerText = '-';
+        function limparSessao() {
+            if (confirm("Deseja realmente limpar os dados e iniciar uma nova linha de raciocínio?")) {
+                historicoSessao = [];
+                sessionId = 'sessao_' + Date.now();
+                entradaAtual = "";
+                document.getElementById('visorNumero').innerText = "-";
+                atualizarInterface();
+                document.getElementById('badgeUltimoMapa').innerText = '-';
+                [1, 2, 3].forEach(c => {
+                    document.getElementById(`grid-col-${c}`).className = "bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center";
+                });
+                document.getElementById('painelPrevisao').innerHTML = `<span class="text-slate-400 italic text-xs">Sessão reiniciada. Aguardando novos dados...</span>`;
+            }
         }
     </script>
 </body>
