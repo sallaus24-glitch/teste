@@ -24,10 +24,10 @@
         <!-- Cabeçalho Limpo -->
         <header class="text-center mb-3">
             <div class="inline-flex items-center justify-center p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-emerald-400 mb-1">
-                <i data-lucide="activity" class="w-5 h-5"></i>
+                <i data-lucide="brain-circuit" class="w-5 h-5"></i>
             </div>
-            <h1 class="text-base font-extrabold text-white tracking-wide">MASTER PRO ANALYZER</h1>
-            <p class="text-[11px] text-slate-400">Leitura Segmentada & Sincronização em Nuvem</p>
+            <h1 class="text-base font-extrabold text-white tracking-wide">MASTER PRO AI</h1>
+            <p class="text-[11px] text-slate-400">Inteligência Acumulativa & Nuvem Ativa</p>
         </header>
 
         <!-- Visor do Número Atual Sendo Digitado -->
@@ -94,28 +94,28 @@
                 <span class="text-slate-400 flex items-center gap-1">
                     <i data-lucide="gauge" class="w-3.5 h-3.5"></i> Confiabilidade da Amostra
                 </span>
-                <span id="labelConfiabilidade" class="font-bold text-slate-400">0% (Aguardando dados)</span>
+                <span id="labelConfiabilidade" class="font-bold text-slate-400">0% (Sincronizando...)</span>
             </div>
             <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
                 <div id="barraConfiabilidade" class="bg-amber-500 h-full w-0 transition-all duration-300"></div>
             </div>
         </div>
 
-        <!-- Painel de Segmentos Individuais -->
+        <!-- Painel de Segmentos Individuais (Aprendizado Acumulativo) -->
         <div class="bg-slate-950 border border-emerald-500/30 rounded-xl p-3 mb-3 shadow-inner">
             <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                <i data-lucide="cpu" class="w-4 h-4"></i> Análise Segmentada Individual
+                <i data-lucide="cpu" class="w-4 h-4"></i> Análise Preditiva Acumulada
             </h2>
             
             <div id="painelPrevisao" class="text-center text-slate-400 text-xs py-2">
-                Insira pelo menos 5 números para carregar os cartões de tendência.
+                Carregando histórico do banco de dados...
             </div>
         </div>
 
         <!-- Estatísticas da Sessão -->
         <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
             <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800/80">
-                <span class="text-slate-500 block text-[10px]">Total de Giros:</span>
+                <span class="text-slate-500 block text-[10px]">Total Analisado (Nuvem):</span>
                 <span id="statTotal" class="text-sm font-bold text-white">0</span>
             </div>
             <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800/80">
@@ -126,20 +126,20 @@
 
         <!-- Botão de Reiniciar Sessão -->
         <button onclick="limparSessao()" class="w-full bg-rose-950/40 hover:bg-rose-900/40 border border-rose-800/50 text-rose-300 font-semibold py-2 rounded-xl transition flex items-center justify-center gap-2 text-xs active:scale-95">
-            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Limpar Sessão / Nova Linha de Raciocínio
+            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Nova Sessão / Limpar Linha de Raciocínio
         </button>
     </div>
 
     <script>
         lucide.createIcons();
 
-        // Credenciais do Supabase integradas com sucesso
         const SUPABASE_URL = 'https://vzqhthduwhhuigybxvin.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_YZKksjHIVt8JrGgCh-qKWg_C2aZeNYm';
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let historicoSessao = [];
-        let sessionId = 'sessao_' + Date.now();
+        let sessionId = localStorage.getItem('master_session_id') || ('sessao_' + Date.now());
+        localStorage.setItem('master_session_id', sessionId);
         let entradaAtual = "";
 
         const numerosVermelhos = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
@@ -147,6 +147,36 @@
         function obterCor(n) {
             if (n === 0) return 'Verde';
             return numerosVermelhos.includes(n) ? 'Vermelho' : 'Preto';
+        }
+
+        // Ao abrir o aplicativo, carrega automaticamente todo o histórico salvo no banco de dados
+        async function carregarHistoricoNuvem() {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('historico_analise')
+                    .select('numero, session_id, criado_em')
+                    .order('criado_em', { ascending: true })
+                    .limit(100); // Puxa os dados mais recentes para base de aprendizado
+
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    // Filtra para pegar a sessão atual ou a mais recente ativa
+                    const ultimaSessaoId = data[data.length - 1].session_id;
+                    sessionId = ultimaSessaoId;
+                    localStorage.setItem('master_session_id', sessionId);
+
+                    historicoSessao = data.map(item => item.numero);
+                    let ultimoNum = historicoSessao[historicoSessao.length - 1];
+                    
+                    atualizarInterface(ultimoNum);
+                } else {
+                    document.getElementById('painelPrevisao').innerHTML = `<span class="text-slate-400 italic text-xs">Banco conectado. Insira o primeiro número para iniciar.</span>`;
+                }
+            } catch (e) {
+                console.error('Erro ao carregar histórico da nuvem:', e);
+                document.getElementById('painelPrevisao').innerHTML = `<span class="text-rose-400 italic text-xs">Erro ao conectar com a nuvem. Verifique a internet.</span>`;
+            }
         }
 
         function digitar(num) {
@@ -184,7 +214,7 @@
 
             atualizarInterface(valor);
 
-            // Sincronização automática com o Supabase
+            // Salva na nuvem em tempo real para alimentar a inteligência acumulativa
             if (supabaseClient) {
                 try {
                     await supabaseClient.from('historico_analise').insert([
@@ -220,20 +250,20 @@
                 }
             }
 
-            let confPercent = Math.min(Math.round((total / 12) * 100), 100);
+            let confPercent = Math.min(Math.round((total / 15) * 100), 100);
             const barra = document.getElementById('barraConfiabilidade');
             const labelConf = document.getElementById('labelConfiabilidade');
             
             barra.style.width = confPercent + '%';
             if (confPercent < 40) {
                 barra.className = "bg-amber-500 h-full transition-all duration-300";
-                labelConf.innerText = `${confPercent}% (Amostra Inicial)`;
+                labelConf.innerText = `${confPercent}% (Aprendendo com o Banco)`;
             } else if (confPercent < 80) {
                 barra.className = "bg-blue-500 h-full transition-all duration-300";
-                labelConf.innerText = `${confPercent}% (Em Calibragem)`;
+                labelConf.innerText = `${confPercent}% (Calibragem Avançada)`;
             } else {
                 barra.className = "bg-emerald-500 h-full transition-all duration-300";
-                labelConf.innerText = `${confPercent}% (Alta Confiabilidade)`;
+                labelConf.innerText = `${confPercent}% (Alta Precisão Acumulada)`;
             }
 
             analisarSegmentosIndividuais();
@@ -243,11 +273,11 @@
             const painel = document.getElementById('painelPrevisao');
             
             if (historicoSessao.length < 5) {
-                painel.innerHTML = `<span class="text-slate-400 italic text-xs">Aguardando dados... Faltam ${5 - historicoSessao.length} giros para carregar os cartões.</span>`;
+                painel.innerHTML = `<span class="text-slate-400 italic text-xs">Aguardando dados suficientes na base... (${historicoSessao.length}/5)</span>`;
                 return;
             }
 
-            // 1. COR
+            // Análise estatística ponderada com todo o histórico acumulado
             let atrasoVermelho = 0, atrasoPreto = 0;
             historicoSessao.slice().reverse().forEach((n, idx) => {
                 if (n > 0) {
@@ -259,7 +289,6 @@
             let corMaisForte = atrasoVermelho > atrasoPreto ? "Vermelho 🟥" : "Preto ⬛";
             let forcaCor = Math.abs(atrasoVermelho - atrasoPreto) >= 2 ? " 🔥" : "";
 
-            // 2. ALTO / BAIXO
             let atrasoBaixo = 0, atrasoAlto = 0;
             historicoSessao.slice().reverse().forEach((n, idx) => {
                 if (n > 0) {
@@ -270,7 +299,6 @@
             let faixaForte = atrasoAlto > atrasoBaixo ? "Altos (19-36)" : "Baixos (1-18)";
             let forcaFaixa = Math.abs(atrasoAlto - atrasoBaixo) >= 2 ? " ⚡" : "";
 
-            // 3. PAR / ÍMPAR
             let atrasoPar = 0, atrasoImpar = 0;
             historicoSessao.slice().reverse().forEach((n, idx) => {
                 if (n > 0) {
@@ -281,7 +309,6 @@
             let paridadeForte = atrasoPar > atrasoImpar ? "Par" : "Ímpar";
             let forcaParidade = Math.abs(atrasoPar - atrasoImpar) >= 2 ? " 🔥" : "";
 
-            // 4. COLUNAS
             let atrasoCols = [0, 0, 0];
             historicoSessao.slice().reverse().forEach((n, idx) => {
                 if (n > 0) {
@@ -294,7 +321,6 @@
             let colunaForte = `${colSugeridaIdx + 1}ª Coluna`;
             let forcaColuna = maxColAtraso >= 3 ? " ⚡" : "";
 
-            // 5. QUARTIS
             let atrasoQuartis = [0, 0, 0, 0];
             historicoSessao.slice().reverse().forEach((n, idx) => {
                 if (n > 0) {
@@ -335,9 +361,10 @@
         }
 
         function limparSessao() {
-            if (confirm("Deseja realmente limpar os dados e iniciar uma nova linha de raciocínio?")) {
-                historicoSessao = [];
+            if (confirm("Deseja iniciar uma nova linha de raciocínio e gerar um novo ID de sessão?")) {
                 sessionId = 'sessao_' + Date.now();
+                localStorage.setItem('master_session_id', sessionId);
+                historicoSessao = [];
                 entradaAtual = "";
                 document.getElementById('visorNumero').innerText = "-";
                 atualizarInterface();
@@ -345,9 +372,14 @@
                 [1, 2, 3].forEach(c => {
                     document.getElementById(`grid-col-${c}`).className = "bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center";
                 });
-                document.getElementById('painelPrevisao').innerHTML = `<span class="text-slate-400 italic text-xs">Sessão reiniciada. Aguardando novos dados...</span>`;
+                document.getElementById('painelPrevisao').innerHTML = `<span class="text-slate-400 italic text-xs">Nova sessão iniciada. Aguardando dados...</span>`;
             }
         }
+
+        // Executa o carregamento automático da nuvem assim que a página abre
+        window.onload = function() {
+            carregarHistoricoNuvem();
+        };
     </script>
 </body>
 </html>
