@@ -27,7 +27,7 @@
                 <i data-lucide="activity" class="w-5 h-5"></i>
             </div>
             <h1 class="text-base font-extrabold text-white tracking-wide">MASTER PRO ANALYZER</h1>
-            <p class="text-[11px] text-slate-400">Leitura Segmentada & Gatilhos de Pressão</p>
+            <p class="text-[11px] text-slate-400">Leitura Segmentada & Sincronização em Nuvem</p>
         </header>
 
         <!-- Visor do Número Atual Sendo Digitado -->
@@ -101,7 +101,7 @@
             </div>
         </div>
 
-        <!-- Painel de Segmentos Individuais (Novo Visual em Cards) -->
+        <!-- Painel de Segmentos Individuais -->
         <div class="bg-slate-950 border border-emerald-500/30 rounded-xl p-3 mb-3 shadow-inner">
             <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
                 <i data-lucide="cpu" class="w-4 h-4"></i> Análise Segmentada Individual
@@ -133,9 +133,10 @@
     <script>
         lucide.createIcons();
 
-        const SUPABASE_URL = 'SUA_SUPABASE_URL';
-        const SUPABASE_ANON_KEY = 'SUA_SUPABASE_ANON_KEY';
-        const supabaseClient = (SUPABASE_URL !== 'SUA_SUPABASE_URL') ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+        // Credenciais do Supabase integradas com sucesso
+        const SUPABASE_URL = 'https://vzqhthduwhhuigybxvin.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_YZKksjHIVt8JrGgCh-qKWg_C2aZeNYm';
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         let historicoSessao = [];
         let sessionId = 'sessao_' + Date.now();
@@ -183,13 +184,14 @@
 
             atualizarInterface(valor);
 
+            // Sincronização automática com o Supabase
             if (supabaseClient) {
                 try {
                     await supabaseClient.from('historico_analise').insert([
-                        { session_id: sessionId, numero: valor, criado_em: new Date() }
+                        { session_id: sessionId, numero: valor }
                     ]);
                 } catch (e) {
-                    console.error('Erro ao sincronizar:', e);
+                    console.error('Erro ao sincronizar com o banco:', e);
                 }
             }
         }
