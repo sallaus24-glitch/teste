@@ -3,64 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analisador Preditivo ULTRA PRO</title>
+    <title>Analisador Preditivo MASTER PRO</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Ícones Lucide -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Supabase Client -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Manifesto para PWA -->
-    <link rel="manifest" href="data:application/manifest+json;charset=utf-8,%7B%22name%22%3A%22Analisador%20Preditivo%22%2C%22short_name%22%3A%22Analisador%22%2C%22start_url%22%3A%22.%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23020617%22%2C%22theme_color%22%3A%22%23059669%22%2C%22icons%22%3A%5B%5D%7D">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #050b14; color: #f1f5f9; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+    </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col items-center p-3">
+<body class="min-h-screen flex flex-col items-center justify-between p-3">
 
-    <div class="w-full max-w-md bg-slate-900 rounded-2xl shadow-2xl p-4 border border-slate-800">
+    <div class="w-full max-w-md bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 border border-slate-800">
+        
+        <!-- Cabeçalho Limpo -->
         <header class="text-center mb-3">
-            <h1 class="text-lg font-bold text-emerald-400 flex items-center justify-center gap-2">
-                <i data-lucide="zap" class="w-5 h-5"></i> Analisador ULTRA PRO
-            </h1>
-            <p class="text-[11px] text-slate-400">IA Estatística, Quartis & Probabilidade Condicional</p>
+            <div class="inline-flex items-center justify-center p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-emerald-400 mb-1">
+                <i data-lucide="activity" class="w-5 h-5"></i>
+            </div>
+            <h1 class="text-base font-extrabold text-white tracking-wide">MASTER PRO ANALYZER</h1>
+            <p class="text-[11px] text-slate-400">Leitura Segmentada & Gatilhos de Pressão</p>
         </header>
 
         <!-- Visor do Número Atual Sendo Digitado -->
         <div class="flex gap-2 mb-3">
-            <div id="visorNumero" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-2.5 text-center text-xl font-bold font-mono text-emerald-400 flex items-center justify-center tracking-widest min-h-[48px]">
+            <div id="visorNumero" class="flex-1 bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-2 text-center text-2xl font-bold mono text-emerald-400 flex items-center justify-center tracking-widest shadow-inner min-h-[50px]">
                 -
             </div>
-            <button onclick="apagarDigito()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 rounded-xl transition border border-slate-700 flex items-center justify-center" title="Apagar">
+            <button onclick="apagarDigito()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 rounded-xl transition border border-slate-700 flex items-center justify-center active:scale-95" title="Apagar">
                 <i data-lucide="delete" class="w-5 h-5"></i>
             </button>
-            <button onclick="confirmarNumero()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 rounded-xl transition shadow-lg shadow-emerald-900/40 flex items-center justify-center text-xs">
+            <button onclick="confirmarNumero()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 rounded-xl transition shadow-lg shadow-emerald-900/40 flex items-center justify-center text-xs active:scale-95">
                 Inserir
             </button>
         </div>
 
         <!-- Teclado Tátil Personalizado (0 a 9) -->
-        <div class="grid grid-cols-5 gap-1.5 mb-3 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
-            <button onclick="digitar(1)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">1</button>
-            <button onclick="digitar(2)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">2</button>
-            <button onclick="digitar(3)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">3</button>
-            <button onclick="digitar(4)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">4</button>
-            <button onclick="digitar(5)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">5</button>
+        <div class="grid grid-cols-5 gap-1.5 mb-3 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
+            <button onclick="digitar(1)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">1</button>
+            <button onclick="digitar(2)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">2</button>
+            <button onclick="digitar(3)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">3</button>
+            <button onclick="digitar(4)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">4</button>
+            <button onclick="digitar(5)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">5</button>
             
-            <button onclick="digitar(6)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">6</button>
-            <button onclick="digitar(7)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">7</button>
-            <button onclick="digitar(8)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">8</button>
-            <button onclick="digitar(9)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700 text-white font-bold py-2.5 rounded-lg text-base transition">9</button>
-            <button onclick="digitar(0)" class="bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700 text-emerald-400 font-bold py-2.5 rounded-lg text-base transition">0</button>
+            <button onclick="digitar(6)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">6</button>
+            <button onclick="digitar(7)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">7</button>
+            <button onclick="digitar(8)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">8</button>
+            <button onclick="digitar(9)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">9</button>
+            <button onclick="digitar(0)" class="bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-700/80 text-emerald-400 font-bold py-3 rounded-lg text-base transition active:scale-95 shadow-sm">0</button>
         </div>
 
-        <!-- Painel Visual Reduzido (Grade 3x3 + Zero) -->
-        <div class="mb-3 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800">
+        <!-- Mapa do Último Número & Colunas -->
+        <div class="mb-3 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
             <div class="flex justify-between items-center mb-1.5">
                 <span class="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
                     <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i> Mapa do Último Número
                 </span>
-                <span id="badgeUltimoMapa" class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono">-</span>
+                <span id="badgeUltimoMapa" class="text-xs bg-slate-800 text-slate-200 px-2.5 py-0.5 rounded mono font-bold">-</span>
             </div>
             <div class="grid grid-cols-4 gap-1 text-center text-xs font-bold">
-                <div id="grid-0" class="bg-emerald-950/50 border border-emerald-800/60 rounded p-1.5 flex flex-col justify-center items-center text-emerald-400">
+                <div id="grid-0" class="bg-emerald-950/40 border border-emerald-800/50 rounded p-1.5 flex flex-col justify-center items-center text-emerald-400">
                     <span class="text-[8px] text-slate-500">ZERO</span>
                     <span class="text-xs">0</span>
                 </div>
@@ -82,7 +89,7 @@
         </div>
 
         <!-- Barra de Confiabilidade da Amostra -->
-        <div class="mb-3 bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+        <div class="mb-3 bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
             <div class="flex justify-between text-[11px] mb-1">
                 <span class="text-slate-400 flex items-center gap-1">
                     <i data-lucide="gauge" class="w-3.5 h-3.5"></i> Confiabilidade da Amostra
@@ -94,30 +101,31 @@
             </div>
         </div>
 
-        <!-- Painel de Previsão Inteligente ULTRA PRO -->
-        <div class="bg-slate-950 border border-emerald-500/40 rounded-xl p-3.5 mb-3 shadow-inner shadow-emerald-950/30">
-            <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <i data-lucide="cpu" class="w-4 h-4"></i> Previsão Neural & Quartis (ULTRA PRO)
+        <!-- Painel de Segmentos Individuais (Novo Visual em Cards) -->
+        <div class="bg-slate-950 border border-emerald-500/30 rounded-xl p-3 mb-3 shadow-inner">
+            <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+                <i data-lucide="cpu" class="w-4 h-4"></i> Análise Segmentada Individual
             </h2>
-            <div id="painelPrevisao" class="text-center text-slate-300 text-xs py-1">
-                Insira pelo menos 6 números para ativar os algoritmos de probabilidade condicional.
+            
+            <div id="painelPrevisao" class="text-center text-slate-400 text-xs py-2">
+                Insira pelo menos 5 números para carregar os cartões de tendência.
             </div>
         </div>
 
-        <!-- Estatísticas da Sessão Atual -->
+        <!-- Estatísticas da Sessão -->
         <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
-            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800/80">
                 <span class="text-slate-500 block text-[10px]">Total de Giros:</span>
                 <span id="statTotal" class="text-sm font-bold text-white">0</span>
             </div>
-            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800/80">
                 <span class="text-slate-500 block text-[10px]">Últimos Números:</span>
-                <span id="statUltimos" class="text-emerald-400 font-mono font-semibold truncate block text-xs">-</span>
+                <span id="statUltimos" class="text-emerald-400 mono font-semibold truncate block text-xs">-</span>
             </div>
         </div>
 
         <!-- Botão de Reiniciar Sessão -->
-        <button onclick="limparSessao()" class="w-full bg-rose-950/40 hover:bg-rose-900/40 border border-rose-800/50 text-rose-300 font-semibold py-2 rounded-xl transition flex items-center justify-center gap-2 text-xs">
+        <button onclick="limparSessao()" class="w-full bg-rose-950/40 hover:bg-rose-900/40 border border-rose-800/50 text-rose-300 font-semibold py-2 rounded-xl transition flex items-center justify-center gap-2 text-xs active:scale-95">
             <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Limpar Sessão / Nova Linha de Raciocínio
         </button>
     </div>
@@ -196,7 +204,7 @@
             if (ultimoValor !== undefined) {
                 let corUltimo = obterCor(ultimoValor);
                 let badgeCorClass = corUltimo === 'Vermelho' ? 'bg-rose-900/80 text-rose-300' : (corUltimo === 'Preto' ? 'bg-slate-800 text-slate-300' : 'bg-emerald-900 text-emerald-300');
-                document.getElementById('badgeUltimoMapa').innerHTML = `#${ultimoValor} <span class="text-[9px] px-1 rounded ${badgeCorClass}">${corUltimo}</span>`;
+                document.getElementById('badgeUltimoMapa').innerHTML = `#${ultimoValor} <span class="text-[9px] px-1.5 py-0.5 rounded ${badgeCorClass}">${corUltimo}</span>`;
                 
                 [1, 2, 3].forEach(c => {
                     const el = document.getElementById(`grid-col-${c}`);
@@ -210,106 +218,116 @@
                 }
             }
 
-            let confPercent = Math.min(Math.round((total / 15) * 100), 100);
+            let confPercent = Math.min(Math.round((total / 12) * 100), 100);
             const barra = document.getElementById('barraConfiabilidade');
             const labelConf = document.getElementById('labelConfiabilidade');
             
             barra.style.width = confPercent + '%';
             if (confPercent < 40) {
                 barra.className = "bg-amber-500 h-full transition-all duration-300";
-                labelConf.innerText = `${confPercent}% (Amostra Baixa)`;
+                labelConf.innerText = `${confPercent}% (Amostra Inicial)`;
             } else if (confPercent < 80) {
                 barra.className = "bg-blue-500 h-full transition-all duration-300";
-                labelConf.innerText = `${confPercent}% (Em Análise)`;
+                labelConf.innerText = `${confPercent}% (Em Calibragem)`;
             } else {
                 barra.className = "bg-emerald-500 h-full transition-all duration-300";
                 labelConf.innerText = `${confPercent}% (Alta Confiabilidade)`;
             }
 
-            analisarInteligenciaUltraPro();
+            analisarSegmentosIndividuais();
         }
 
-        function analisarInteligenciaUltraPro() {
+        function analisarSegmentosIndividuais() {
             const painel = document.getElementById('painelPrevisao');
             
-            if (historicoSessao.length < 6) {
-                painel.innerHTML = `<span class="text-slate-400 italic text-xs">Aguardando dados... Faltam ${6 - historicoSessao.length} entradas para o motor Ultra Pro calibrar.</span>`;
+            if (historicoSessao.length < 5) {
+                painel.innerHTML = `<span class="text-slate-400 italic text-xs">Aguardando dados... Faltam ${5 - historicoSessao.length} giros para carregar os cartões.</span>`;
                 return;
             }
 
-            // 1. Cálculo de Quartis (Q1: 1-9, Q2: 10-18, Q3: 19-27, Q4: 28-36)
-            let quartisCount = [0, 0, 0, 0];
-            let atrasoQuartis = [999, 999, 999, 999];
+            // 1. COR
+            let atrasoVermelho = 0, atrasoPreto = 0;
+            historicoSessao.slice().reverse().forEach((n, idx) => {
+                if (n > 0) {
+                    let c = obterCor(n);
+                    if (c === 'Vermelho' && atrasoVermelho === 0) atrasoVermelho = idx;
+                    if (c === 'Preto' && atrasoPreto === 0) atrasoPreto = idx;
+                }
+            });
+            let corMaisForte = atrasoVermelho > atrasoPreto ? "Vermelho 🟥" : "Preto ⬛";
+            let forcaCor = Math.abs(atrasoVermelho - atrasoPreto) >= 2 ? " 🔥" : "";
 
+            // 2. ALTO / BAIXO
+            let atrasoBaixo = 0, atrasoAlto = 0;
+            historicoSessao.slice().reverse().forEach((n, idx) => {
+                if (n > 0) {
+                    if (n <= 18 && atrasoBaixo === 0) atrasoBaixo = idx;
+                    if (n > 18 && atrasoAlto === 0) atrasoAlto = idx;
+                }
+            });
+            let faixaForte = atrasoAlto > atrasoBaixo ? "Altos (19-36)" : "Baixos (1-18)";
+            let forcaFaixa = Math.abs(atrasoAlto - atrasoBaixo) >= 2 ? " ⚡" : "";
+
+            // 3. PAR / ÍMPAR
+            let atrasoPar = 0, atrasoImpar = 0;
+            historicoSessao.slice().reverse().forEach((n, idx) => {
+                if (n > 0) {
+                    if (n % 2 === 0 && atrasoPar === 0) atrasoPar = idx;
+                    if (n % 2 !== 0 && atrasoImpar === 0) atrasoImpar = idx;
+                }
+            });
+            let paridadeForte = atrasoPar > atrasoImpar ? "Par" : "Ímpar";
+            let forcaParidade = Math.abs(atrasoPar - atrasoImpar) >= 2 ? " 🔥" : "";
+
+            // 4. COLUNAS
+            let atrasoCols = [0, 0, 0];
+            historicoSessao.slice().reverse().forEach((n, idx) => {
+                if (n > 0) {
+                    let col = (n % 3 === 0) ? 3 : n % 3;
+                    if (atrasoCols[col - 1] === 0) atrasoCols[col - 1] = idx;
+                }
+            });
+            let maxColAtraso = Math.max(...atrasoCols);
+            let colSugeridaIdx = atrasoCols.indexOf(maxColAtraso);
+            let colunaForte = `${colSugeridaIdx + 1}ª Coluna`;
+            let forcaColuna = maxColAtraso >= 3 ? " ⚡" : "";
+
+            // 5. QUARTIS
+            let atrasoQuartis = [0, 0, 0, 0];
             historicoSessao.slice().reverse().forEach((n, idx) => {
                 if (n > 0) {
                     let q = n <= 9 ? 0 : (n <= 18 ? 1 : (n <= 27 ? 2 : 3));
-                    quartisCount[q]++;
-                    if (atrasoQuartis[q] === 999) atrasoQuartis[q] = idx;
+                    if (atrasoQuartis[q] === 0) atrasoQuartis[q] = idx;
                 }
             });
-
-            // Quartil com maior atraso (déficit)
-            let maxAtrasoQ = Math.max(...atrasoQuartis);
-            let quartilSugeridoIdx = atrasoQuartis.indexOf(maxAtrasoQ);
-            let nomesQuartis = ["Q1 (1-9)", "Q2 (10-18)", "Q3 (19-27)", "Q4 (28-36)"];
-            let quartilAlvo = nomesQuartis[quartilSugeridoIdx];
-
-            // 2. Probabilidade Condicional (Markov Simples nos últimos pares de transição)
-            let transicoesAltosParaBaixos = 0;
-            let transicoesBaixosParaAltos = 0;
-            for (let i = 1; i < historicoSessao.length; i++) {
-                let ant = historicoSessao[i-1];
-                let atual = historicoSessao[i];
-                if (ant > 18 && atual <= 18) transicoesAltosParaBaixos++;
-                if (ant <= 18 && atual > 18) transicoesBaixosParaAltos++;
-            }
-
-            let ultimoNum = historicoSessao[historicoSessao.length - 1];
-            let tendenciaCondicional = "";
-            if (ultimoNum > 18) {
-                tendenciaCondicional = transicoesAltosParaBaixos >= transicoesBaixosParaAltos ? 
-                    "Tendência de Reversão para Baixo 🟢" : "Tendência de Continuidade Alto 🔵";
-            } else if (ultimoNum > 0) {
-                tendenciaCondicional = transicoesBaixosParaAltos >= transicoesAltosParaBaixos ? 
-                    "Tendência de Reversão para Alto 🔵" : "Tendência de Continuidade Baixo 🟢";
-            } else {
-                tendenciaCondicional = "Zero detectado (Aguardando fluxo)";
-            }
-
-            // 3. Cores e Atrasos Globais
-            let atrasoVermelho = 999, atrasoPreto = 999;
-            historicoSessao.slice().reverse().forEach((n, idx) => {
-                if (n > 0) {
-                    let cor = obterCor(n);
-                    if (cor === 'Vermelho' && atrasoVermelho === 999) atrasoVermelho = idx;
-                    if (cor === 'Preto' && atrasoPreto === 999) atrasoPreto = idx;
-                }
-            });
-            let predCor = atrasoVermelho > atrasoPreto ? "Vermelho 🟥" : "Preto ⬛";
+            let maxQAtraso = Math.max(...atrasoQuartis);
+            let qSugeridoIdx = atrasoQuartis.indexOf(maxQAtraso);
+            let nomesQ = ["Q1 (1-9)", "Q2 (10-18)", "Q3 (19-27)", "Q4 (28-36)"];
+            let quartilForte = nomesQ[qSugeridoIdx];
+            let forcaQuartil = maxQAtraso >= 4 ? " 🔥" : "";
 
             painel.innerHTML = `
-                <div class="space-y-2 text-left text-xs">
-                    <div class="bg-emerald-950/40 border border-emerald-800/50 p-2 rounded-lg text-center">
-                        <span class="text-[10px] text-emerald-400 block uppercase tracking-wider font-semibold">Probabilidade Condicional (Markov)</span>
-                        <span class="text-white font-bold text-xs">${tendenciaCondicional}</span>
+                <div class="grid grid-cols-2 gap-2 text-xs text-left">
+                    <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 shadow-sm">
+                        <span class="text-[9px] text-slate-400 block uppercase font-semibold mb-0.5">Cor Dominante</span>
+                        <span class="text-white font-bold text-xs">${corMaisForte}${forcaCor}</span>
                     </div>
-
-                    <div class="grid grid-cols-2 gap-1.5">
-                        <div class="bg-slate-900/80 p-2 rounded border border-slate-800">
-                            <span class="text-[10px] text-slate-400 block">Cor Mais Provável:</span>
-                            <span class="text-white font-bold text-xs">${predCor}</span>
-                        </div>
-                        <div class="bg-slate-900/80 p-2 rounded border border-slate-800">
-                            <span class="text-[10px] text-slate-400 block">Quartil em Déficit (Alvo):</span>
-                            <span class="text-emerald-400 font-bold text-xs">${quartilAlvo}</span>
-                        </div>
+                    <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 shadow-sm">
+                        <span class="text-[9px] text-slate-400 block uppercase font-semibold mb-0.5">Faixa (Altura)</span>
+                        <span class="text-white font-bold text-xs">${faixaForte}${forcaFaixa}</span>
                     </div>
-
-                    <div class="bg-slate-900/80 p-2 rounded border border-slate-800 text-center">
-                        <span class="text-[10px] text-slate-400 block">Status da Amostra Ativa:</span>
-                        <span class="text-slate-200 font-medium text-[11px]">Sistema monitorando fluxos e desvios de ociosidade com sucesso.</span>
+                    <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 shadow-sm">
+                        <span class="text-[9px] text-slate-400 block uppercase font-semibold mb-0.5">Paridade</span>
+                        <span class="text-white font-bold text-xs">${paridadeForte}${forcaParidade}</span>
                     </div>
+                    <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 shadow-sm">
+                        <span class="text-[9px] text-slate-400 block uppercase font-semibold mb-0.5">Coluna em Déficit</span>
+                        <span class="text-emerald-400 font-bold text-xs">${colunaForte}${forcaColuna}</span>
+                    </div>
+                </div>
+                <div class="mt-2 bg-slate-900/90 p-2.5 rounded-xl border border-emerald-500/30 text-center shadow-sm">
+                    <span class="text-[9px] text-emerald-400 block uppercase font-bold tracking-wider mb-0.5">Quartil de Maior Pressão (Alvo)</span>
+                    <span class="text-white font-extrabold text-sm">${quartilForte}${forcaQuartil}</span>
                 </div>
             `;
         }
