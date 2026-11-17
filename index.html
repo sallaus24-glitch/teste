@@ -1,385 +1,518 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Analisador Preditivo MASTER PRO</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Ícones Lucide -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Supabase Client -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #050b14; color: #f1f5f9; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-    </style>
-</head>
-<body class="min-h-screen flex flex-col items-center justify-between p-3">
 
-    <div class="w-full max-w-md bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-2xl p-4 border border-slate-800">
-        
-        <!-- Cabeçalho Limpo -->
-        <header class="text-center mb-3">
-            <div class="inline-flex items-center justify-center p-2 bg-emerald-500/10 rounded-xl border border-emerald-500/20 text-emerald-400 mb-1">
-                <i data-lucide="brain-circuit" class="w-5 h-5"></i>
-            </div>
-            <h1 class="text-base font-extrabold text-white tracking-wide">MASTER PRO AI</h1>
-            <p class="text-[11px] text-slate-400">Inteligência Acumulativa & Nuvem Ativa</p>
-        </header>
+lucide.createIcons();
 
-        <!-- Visor do Número Atual Sendo Digitado -->
-        <div class="flex gap-2 mb-3">
-            <div id="visorNumero" class="flex-1 bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-2 text-center text-2xl font-bold mono text-emerald-400 flex items-center justify-center tracking-widest shadow-inner min-h-[50px]">
-                -
-            </div>
-            <button onclick="apagarDigito()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 rounded-xl transition border border-slate-700 flex items-center justify-center active:scale-95" title="Apagar">
-                <i data-lucide="delete" class="w-5 h-5"></i>
-            </button>
-            <button onclick="confirmarNumero()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-4 rounded-xl transition shadow-lg shadow-emerald-900/40 flex items-center justify-center text-xs active:scale-95">
-                Inserir
-            </button>
-        </div>
+const SUPABASE_URL = 'https://vzqhthduwhhuigybxvin.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_YZKksjHIVt8JrGgCh-qKWg_C2aZeNYm';
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        <!-- Teclado Tátil Personalizado (0 a 9) -->
-        <div class="grid grid-cols-5 gap-1.5 mb-3 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
-            <button onclick="digitar(1)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">1</button>
-            <button onclick="digitar(2)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">2</button>
-            <button onclick="digitar(3)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">3</button>
-            <button onclick="digitar(4)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">4</button>
-            <button onclick="digitar(5)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">5</button>
-            
-            <button onclick="digitar(6)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">6</button>
-            <button onclick="digitar(7)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">7</button>
-            <button onclick="digitar(8)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">8</button>
-            <button onclick="digitar(9)" class="bg-slate-900 hover:bg-slate-800 border border-slate-700/60 text-white font-bold py-3 rounded-lg text-base transition active:bg-emerald-600 active:scale-95 shadow-sm">9</button>
-            <button onclick="digitar(0)" class="bg-emerald-950/90 hover:bg-emerald-900 border border-emerald-700/80 text-emerald-400 font-bold py-3 rounded-lg text-base transition active:scale-95 shadow-sm">0</button>
-        </div>
+const PAGE_SIZE = 1000;
+const RED = new Set([1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36]);
 
-        <!-- Mapa do Último Número & Colunas -->
-        <div class="mb-3 bg-slate-950/60 p-2.5 rounded-xl border border-slate-800/80">
-            <div class="flex justify-between items-center mb-1.5">
-                <span class="text-[11px] font-semibold text-slate-400 flex items-center gap-1">
-                    <i data-lucide="layout-grid" class="w-3.5 h-3.5"></i> Mapa do Último Número
-                </span>
-                <span id="badgeUltimoMapa" class="text-xs bg-slate-800 text-slate-200 px-2.5 py-0.5 rounded mono font-bold">-</span>
-            </div>
-            <div class="grid grid-cols-4 gap-1 text-center text-xs font-bold">
-                <div id="grid-0" class="bg-emerald-950/40 border border-emerald-800/50 rounded p-1.5 flex flex-col justify-center items-center text-emerald-400">
-                    <span class="text-[8px] text-slate-500">ZERO</span>
-                    <span class="text-xs">0</span>
-                </div>
-                <div class="col-span-3 grid grid-cols-3 gap-1">
-                    <div id="grid-col-1" class="bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center">
-                        <span class="text-[8px] text-slate-500">COL 1</span>
-                        <span class="text-slate-300">-</span>
-                    </div>
-                    <div id="grid-col-2" class="bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center">
-                        <span class="text-[8px] text-slate-500">COL 2</span>
-                        <span class="text-slate-300">-</span>
-                    </div>
-                    <div id="grid-col-3" class="bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center">
-                        <span class="text-[8px] text-slate-500">COL 3</span>
-                        <span class="text-slate-300">-</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+let historicoGlobal = [];
+let historicoSessao = [];
+let sessionId = localStorage.getItem('master_session_id') || ('sessao_' + Date.now());
+let entradaAtual = '';
+let carregando = false;
 
-        <!-- Barra de Confiabilidade da Amostra -->
-        <div class="mb-3 bg-slate-950 p-2.5 rounded-xl border border-slate-800/80">
-            <div class="flex justify-between text-[11px] mb-1">
-                <span class="text-slate-400 flex items-center gap-1">
-                    <i data-lucide="gauge" class="w-3.5 h-3.5"></i> Confiabilidade da Amostra
-                </span>
-                <span id="labelConfiabilidade" class="font-bold text-slate-400">0% (Sincronizando...)</span>
-            </div>
-            <div class="w-full bg-slate-800 h-1.5 rounded-full overflow-hidden">
-                <div id="barraConfiabilidade" class="bg-amber-500 h-full w-0 transition-all duration-300"></div>
-            </div>
-        </div>
+localStorage.setItem('master_session_id', sessionId);
 
-        <!-- Painel de Segmentos Individuais (Aprendizado Acumulativo) -->
-        <div class="bg-slate-950 border border-emerald-500/30 rounded-xl p-3 mb-3 shadow-inner">
-            <h2 class="text-xs font-bold text-emerald-400 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
-                <i data-lucide="cpu" class="w-4 h-4"></i> Análise Preditiva Acumulada
-            </h2>
-            
-            <div id="painelPrevisao" class="text-center text-slate-400 text-xs py-2">
-                Carregando histórico do banco de dados...
-            </div>
-        </div>
+const $ = id => document.getElementById(id);
 
-        <!-- Estatísticas da Sessão -->
-        <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
-            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800/80">
-                <span class="text-slate-500 block text-[10px]">Total Analisado (Nuvem):</span>
-                <span id="statTotal" class="text-sm font-bold text-white">0</span>
-            </div>
-            <div class="bg-slate-950 p-2.5 rounded-lg border border-slate-800/80">
-                <span class="text-slate-500 block text-[10px]">Últimos Números:</span>
-                <span id="statUltimos" class="text-emerald-400 mono font-semibold truncate block text-xs">-</span>
-            </div>
-        </div>
+function obterCor(n) {
+    if (n === 0) return 'Verde';
+    return RED.has(n) ? 'Vermelho' : 'Preto';
+}
 
-        <!-- Botão de Reiniciar Sessão -->
-        <button onclick="limparSessao()" class="w-full bg-rose-950/40 hover:bg-rose-900/40 border border-rose-800/50 text-rose-300 font-semibold py-2 rounded-xl transition flex items-center justify-center gap-2 text-xs active:scale-95">
-            <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Nova Sessão / Limpar Linha de Raciocínio
-        </button>
-    </div>
+function obterColuna(n) {
+    return n === 0 ? 0 : ((n - 1) % 3) + 1;
+}
 
-    <script>
-        lucide.createIcons();
+function obterFaixa(n) {
+    if (n === 0) return 'Zero';
+    return n <= 18 ? 'Baixos' : 'Altos';
+}
 
-        const SUPABASE_URL = 'https://vzqhthduwhhuigybxvin.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_YZKksjHIVt8JrGgCh-qKWg_C2aZeNYm';
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+function obterParidade(n) {
+    if (n === 0) return 'Zero';
+    return n % 2 === 0 ? 'Par' : 'Ímpar';
+}
 
-        let historicoSessao = [];
-        let sessionId = localStorage.getItem('master_session_id') || ('sessao_' + Date.now());
-        localStorage.setItem('master_session_id', sessionId);
-        let entradaAtual = "";
+function obterSetor(n) {
+    if (n === 0) return 'Zero';
+    if (n <= 12) return '1ª Dúzia';
+    if (n <= 24) return '2ª Dúzia';
+    return '3ª Dúzia';
+}
 
-        const numerosVermelhos = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
+// ======================================
+// 1. MEMÓRIA HISTÓRICA COMPLETA
+// ======================================
 
-        function obterCor(n) {
-            if (n === 0) return 'Verde';
-            return numerosVermelhos.includes(n) ? 'Vermelho' : 'Preto';
+async function carregarHistoricoNuvem() {
+    if (carregando) return;
+    carregando = true;
+
+    const painel = $('painelPrevisao');
+    painel.innerHTML = 'Sincronizando memória histórica...';
+
+    try {
+        let todos = [];
+        let offset = 0;
+
+        while (true) {
+            const { data, error } = await supabaseClient
+                .from('historico_analise')
+                .select('numero, session_id, criado_em')
+                .order('criado_em', { ascending: true })
+                .range(offset, offset + PAGE_SIZE - 1);
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) break;
+
+            todos.push(...data);
+            offset += data.length;
+
+            if (data.length < PAGE_SIZE) break;
         }
 
-        // Ao abrir o aplicativo, carrega automaticamente todo o histórico salvo no banco de dados
-        async function carregarHistoricoNuvem() {
-            try {
-                const { data, error } = await supabaseClient
-                    .from('historico_analise')
-                    .select('numero, session_id, criado_em')
-                    .order('criado_em', { ascending: true })
-                    .limit(100); // Puxa os dados mais recentes para base de aprendizado
+        historicoGlobal = todos
+            .filter(x => Number.isInteger(Number(x.numero)) &&
+                Number(x.numero) >= 0 && Number(x.numero) <= 36)
+            .map(x => ({
+                numero: Number(x.numero),
+                session_id: x.session_id,
+                criado_em: x.criado_em
+            }));
 
-                if (error) throw error;
+        historicoSessao = historicoGlobal
+            .filter(x => x.session_id === sessionId)
+            .map(x => x.numero);
 
-                if (data && data.length > 0) {
-                    // Filtra para pegar a sessão atual ou a mais recente ativa
-                    const ultimaSessaoId = data[data.length - 1].session_id;
-                    sessionId = ultimaSessaoId;
-                    localStorage.setItem('master_session_id', sessionId);
+        atualizarInterface();
 
-                    historicoSessao = data.map(item => item.numero);
-                    let ultimoNum = historicoSessao[historicoSessao.length - 1];
-                    
-                    atualizarInterface(ultimoNum);
-                } else {
-                    document.getElementById('painelPrevisao').innerHTML = `<span class="text-slate-400 italic text-xs">Banco conectado. Insira o primeiro número para iniciar.</span>`;
-                }
-            } catch (e) {
-                console.error('Erro ao carregar histórico da nuvem:', e);
-                document.getElementById('painelPrevisao').innerHTML = `<span class="text-rose-400 italic text-xs">Erro ao conectar com a nuvem. Verifique a internet.</span>`;
-            }
-        }
+    } catch (e) {
+        console.error(e);
+        painel.innerHTML =
+            '<span class="text-rose-400">Falha ao carregar histórico. Verifique conexão e permissões do Supabase.</span>';
+    } finally {
+        carregando = false;
+    }
+}
 
-        function digitar(num) {
-            if (entradaAtual.length >= 2) {
-                entradaAtual = num.toString();
-            } else {
-                entradaAtual += num.toString();
-            }
+// ======================================
+// 2. TECLADO
+// ======================================
 
-            let valInt = parseInt(entradaAtual);
-            if (valInt > 36) {
-                entradaAtual = num.toString();
-            }
+function digitar(num) {
+    if (entradaAtual.length >= 2) entradaAtual = '';
 
-            document.getElementById('visorNumero').innerText = entradaAtual;
-        }
+    entradaAtual += String(num);
 
-        function apagarDigito() {
-            entradaAtual = "";
-            document.getElementById('visorNumero').innerText = "-";
-        }
+    if (Number(entradaAtual) > 36) {
+        entradaAtual = String(num);
+    }
 
-        async function confirmarNumero() {
-            if (entradaAtual === "") return;
-            const valor = parseInt(entradaAtual);
+    $('visorNumero').innerText = entradaAtual;
+}
 
-            if (isNaN(valor) || valor < 0 || valor > 36) {
-                alert('Número inválido. Digite de 0 a 36.');
-                apagarDigito();
-                return;
-            }
+function apagarDigito() {
+    entradaAtual = '';
+    $('visorNumero').innerText = '-';
+}
 
-            historicoSessao.push(valor);
-            apagarDigito();
+// ======================================
+// 3. REGISTRO DE RESULTADOS
+// ======================================
 
-            atualizarInterface(valor);
+async function confirmarNumero() {
+    if (entradaAtual === '') return;
 
-            // Salva na nuvem em tempo real para alimentar a inteligência acumulativa
-            if (supabaseClient) {
-                try {
-                    await supabaseClient.from('historico_analise').insert([
-                        { session_id: sessionId, numero: valor }
-                    ]);
-                } catch (e) {
-                    console.error('Erro ao sincronizar com o banco:', e);
-                }
-            }
-        }
+    const valor = Number(entradaAtual);
 
-        function atualizarInterface(ultimoValor) {
-            const total = historicoSessao.length;
-            document.getElementById('statTotal').innerText = total;
-            
-            const ultimos5 = historicoSessao.slice(-5).join(', ');
-            document.getElementById('statUltimos').innerText = ultimos5 || '-';
+    if (!Number.isInteger(valor) || valor < 0 || valor > 36) {
+        alert('Digite um número de 0 a 36.');
+        apagarDigito();
+        return;
+    }
 
-            if (ultimoValor !== undefined) {
-                let corUltimo = obterCor(ultimoValor);
-                let badgeCorClass = corUltimo === 'Vermelho' ? 'bg-rose-900/80 text-rose-300' : (corUltimo === 'Preto' ? 'bg-slate-800 text-slate-300' : 'bg-emerald-900 text-emerald-300');
-                document.getElementById('badgeUltimoMapa').innerHTML = `#${ultimoValor} <span class="text-[9px] px-1.5 py-0.5 rounded ${badgeCorClass}">${corUltimo}</span>`;
-                
-                [1, 2, 3].forEach(c => {
-                    const el = document.getElementById(`grid-col-${c}`);
-                    el.className = "bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center";
-                });
+    const botao = document.querySelector('button[onclick="confirmarNumero()"]');
+    botao.disabled = true;
 
-                if (ultimoValor > 0) {
-                    let colAtual = (ultimoValor % 3 === 0) ? 3 : ultimoValor % 3;
-                    const elAtivo = document.getElementById(`grid-col-${colAtual}`);
-                    elAtivo.className = "bg-emerald-950/70 border border-emerald-600 rounded p-1.5 flex flex-col justify-center text-emerald-400 font-bold";
-                }
-            }
-
-            let confPercent = Math.min(Math.round((total / 15) * 100), 100);
-            const barra = document.getElementById('barraConfiabilidade');
-            const labelConf = document.getElementById('labelConfiabilidade');
-            
-            barra.style.width = confPercent + '%';
-            if (confPercent < 40) {
-                barra.className = "bg-amber-500 h-full transition-all duration-300";
-                labelConf.innerText = `${confPercent}% (Aprendendo com o Banco)`;
-            } else if (confPercent < 80) {
-                barra.className = "bg-blue-500 h-full transition-all duration-300";
-                labelConf.innerText = `${confPercent}% (Calibragem Avançada)`;
-            } else {
-                barra.className = "bg-emerald-500 h-full transition-all duration-300";
-                labelConf.innerText = `${confPercent}% (Alta Precisão Acumulada)`;
-            }
-
-            analisarSegmentosIndividuais();
-        }
-
-        function analisarSegmentosIndividuais() {
-            const painel = document.getElementById('painelPrevisao');
-            
-            if (historicoSessao.length < 5) {
-                painel.innerHTML = `<span class="text-slate-400 italic text-xs">Aguardando dados suficientes na base... (${historicoSessao.length}/5)</span>`;
-                return;
-            }
-
-            // Análise estatística ponderada com todo o histórico acumulado
-            let atrasoVermelho = 0, atrasoPreto = 0;
-            historicoSessao.slice().reverse().forEach((n, idx) => {
-                if (n > 0) {
-                    let c = obterCor(n);
-                    if (c === 'Vermelho' && atrasoVermelho === 0) atrasoVermelho = idx;
-                    if (c === 'Preto' && atrasoPreto === 0) atrasoPreto = idx;
-                }
-            });
-            let corMaisForte = atrasoVermelho > atrasoPreto ? "Vermelho 🟥" : "Preto ⬛";
-            let forcaCor = Math.abs(atrasoVermelho - atrasoPreto) >= 2 ? " 🔥" : "";
-
-            let atrasoBaixo = 0, atrasoAlto = 0;
-            historicoSessao.slice().reverse().forEach((n, idx) => {
-                if (n > 0) {
-                    if (n <= 18 && atrasoBaixo === 0) atrasoBaixo = idx;
-                    if (n > 18 && atrasoAlto === 0) atrasoAlto = idx;
-                }
-            });
-            let faixaForte = atrasoAlto > atrasoBaixo ? "Altos (19-36)" : "Baixos (1-18)";
-            let forcaFaixa = Math.abs(atrasoAlto - atrasoBaixo) >= 2 ? " ⚡" : "";
-
-            let atrasoPar = 0, atrasoImpar = 0;
-            historicoSessao.slice().reverse().forEach((n, idx) => {
-                if (n > 0) {
-                    if (n % 2 === 0 && atrasoPar === 0) atrasoPar = idx;
-                    if (n % 2 !== 0 && atrasoImpar === 0) atrasoImpar = idx;
-                }
-            });
-            let paridadeForte = atrasoPar > atrasoImpar ? "Par" : "Ímpar";
-            let forcaParidade = Math.abs(atrasoPar - atrasoImpar) >= 2 ? " 🔥" : "";
-
-            let atrasoCols = [0, 0, 0];
-            historicoSessao.slice().reverse().forEach((n, idx) => {
-                if (n > 0) {
-                    let col = (n % 3 === 0) ? 3 : n % 3;
-                    if (atrasoCols[col - 1] === 0) atrasoCols[col - 1] = idx;
-                }
-            });
-            let maxColAtraso = Math.max(...atrasoCols);
-            let colSugeridaIdx = atrasoCols.indexOf(maxColAtraso);
-            let colunaForte = `${colSugeridaIdx + 1}ª Coluna`;
-            let forcaColuna = maxColAtraso >= 3 ? " ⚡" : "";
-
-            let atrasoQuartis = [0, 0, 0, 0];
-            historicoSessao.slice().reverse().forEach((n, idx) => {
-                if (n > 0) {
-                    let q = n <= 9 ? 0 : (n <= 18 ? 1 : (n <= 27 ? 2 : 3));
-                    if (atrasoQuartis[q] === 0) atrasoQuartis[q] = idx;
-                }
-            });
-            let maxQAtraso = Math.max(...atrasoQuartis);
-            let qSugeridoIdx = atrasoQuartis.indexOf(maxQAtraso);
-            let nomesQ = ["Q1 (1-9)", "Q2 (10-18)", "Q3 (19-27)", "Q4 (28-36)"];
-            let quartilForte = nomesQ[qSugeridoIdx];
-            let forcaQuartil = maxQAtraso >= 4 ? " 🔥" : "";
-
-            painel.innerHTML = `
-                <div class="grid grid-cols-2 gap-2 text-xs text-left">
-                    <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 shadow-sm">
-                        <span class="text-[9px] text-slate-400 block uppercase font-semibold mb-0.5">Cor Dominante</span>
-                        <span class="text-white font-bold text-xs">${corMaisForte}${forcaCor}</span>
-                    </div>
-                    <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 shadow-sm">
-                        <span class="text-[9px] text-slate-400 block uppercase font-semibold mb-0.5">Faixa (Altura)</span>
-                        <span class="text-white font-bold text-xs">${faixaForte}${forcaFaixa}</span>
-                    </div>
-                    <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 shadow-sm">
-                        <span class="text-[9px] text-slate-400 block uppercase font-semibold mb-0.5">Paridade</span>
-                        <span class="text-white font-bold text-xs">${paridadeForte}${forcaParidade}</span>
-                    </div>
-                    <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 shadow-sm">
-                        <span class="text-[9px] text-slate-400 block uppercase font-semibold mb-0.5">Coluna em Déficit</span>
-                        <span class="text-emerald-400 font-bold text-xs">${colunaForte}${forcaColuna}</span>
-                    </div>
-                </div>
-                <div class="mt-2 bg-slate-900/90 p-2.5 rounded-xl border border-emerald-500/30 text-center shadow-sm">
-                    <span class="text-[9px] text-emerald-400 block uppercase font-bold tracking-wider mb-0.5">Quartil de Maior Pressão (Alvo)</span>
-                    <span class="text-white font-extrabold text-sm">${quartilForte}${forcaQuartil}</span>
-                </div>
-            `;
-        }
-
-        function limparSessao() {
-            if (confirm("Deseja iniciar uma nova linha de raciocínio e gerar um novo ID de sessão?")) {
-                sessionId = 'sessao_' + Date.now();
-                localStorage.setItem('master_session_id', sessionId);
-                historicoSessao = [];
-                entradaAtual = "";
-                document.getElementById('visorNumero').innerText = "-";
-                atualizarInterface();
-                document.getElementById('badgeUltimoMapa').innerText = '-';
-                [1, 2, 3].forEach(c => {
-                    document.getElementById(`grid-col-${c}`).className = "bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center";
-                });
-                document.getElementById('painelPrevisao').innerHTML = `<span class="text-slate-400 italic text-xs">Nova sessão iniciada. Aguardando dados...</span>`;
-            }
-        }
-
-        // Executa o carregamento automático da nuvem assim que a página abre
-        window.onload = function() {
-            carregarHistoricoNuvem();
+    try {
+        const registro = {
+            session_id: sessionId,
+            numero: valor
         };
-    </script>
-</body>
-</html>
+
+        const { error } = await supabaseClient
+            .from('historico_analise')
+            .insert([registro]);
+
+        if (error) throw error;
+
+        historicoGlobal.push({
+            numero: valor,
+            session_id: sessionId,
+            criado_em: new Date().toISOString()
+        });
+
+        historicoSessao.push(valor);
+
+        apagarDigito();
+        atualizarInterface();
+
+    } catch (e) {
+        console.error(e);
+        alert('Não foi possível salvar o resultado. Ele não foi adicionado à memória.');
+    } finally {
+        botao.disabled = false;
+    }
+}
+
+// ======================================
+// 4. MOTOR ESTATÍSTICO
+// ======================================
+
+function contar(lista, funcao) {
+    const mapa = {};
+
+    lista.forEach(n => {
+        const chave = funcao(n);
+        mapa[chave] = (mapa[chave] || 0) + 1;
+    });
+
+    return mapa;
+}
+
+function frequencia(lista, funcao) {
+    const mapa = contar(lista, funcao);
+    const total = lista.length || 1;
+
+    return Object.fromEntries(
+        Object.entries(mapa).map(([k, v]) => [k, v / total])
+    );
+}
+
+function analisarAtraso(lista, funcao, categoria) {
+    for (let i = lista.length - 1; i >= 0; i--) {
+        if (funcao(lista[i]) === categoria) {
+            return lista.length - 1 - i;
+        }
+    }
+    return lista.length;
+}
+
+function analisarTransicoes(lista, funcao) {
+    const transicoes = {};
+
+    for (let i = 1; i < lista.length; i++) {
+        const anterior = funcao(lista[i - 1]);
+        const atual = funcao(lista[i]);
+
+        if (!transicoes[anterior]) transicoes[anterior] = {};
+        transicoes[anterior][atual] =
+            (transicoes[anterior][atual] || 0) + 1;
+    }
+
+    return transicoes;
+}
+
+function calcularDistribuicao(lista, funcao, categorias) {
+    const resultado = {};
+    categorias.forEach(c => resultado[c] = 0);
+
+    lista.forEach(n => {
+        resultado[funcao(n)]++;
+    });
+
+    return resultado;
+}
+
+// ======================================
+// 5. MOTOR DE APRENDIZADO
+// ======================================
+
+function executarInteligencia() {
+    const numeros = historicoGlobal.map(x => x.numero);
+    const total = numeros.length;
+
+    if (total < 10) {
+        $('painelPrevisao').innerHTML =
+            `Necessário acumular mais resultados. ${total}/10`;
+        return;
+    }
+
+    const recentes30 = numeros.slice(-30);
+    const recentes100 = numeros.slice(-100);
+    const recentes300 = numeros.slice(-300);
+
+    const cores = ['Vermelho', 'Preto', 'Verde'];
+    const faixas = ['Baixos', 'Altos', 'Zero'];
+    const paridades = ['Par', 'Ímpar', 'Zero'];
+    const colunas = [1, 2, 3, 0];
+    const setores = ['1ª Dúzia', '2ª Dúzia', '3ª Dúzia', 'Zero'];
+
+    const freqGeral = frequencia(numeros, obterCor);
+    const freqRecente = frequencia(recentes100, obterCor);
+
+    const freqNumero = contar(numeros, n => n);
+    const freqNumeroRecente = contar(recentes100, n => n);
+
+    const freqFaixa = calcularDistribuicao(numeros, obterFaixa, faixas);
+    const freqParidade = calcularDistribuicao(numeros, obterParidade, paridades);
+    const freqColuna = calcularDistribuicao(numeros, obterColuna, colunas);
+    const freqSetor = calcularDistribuicao(numeros, obterSetor, setores);
+
+    const transicaoCor = analisarTransicoes(numeros, obterCor);
+    const transicaoFaixa = analisarTransicoes(numeros, obterFaixa);
+    const transicaoParidade = analisarTransicoes(numeros, obterParidade);
+
+    const ultimo = numeros[numeros.length - 1];
+
+    const ultimaCor = obterCor(ultimo);
+    const ultimaFaixa = obterFaixa(ultimo);
+    const ultimaParidade = obterParidade(ultimo);
+
+    // Atrasos reais: não confundir ausência com índice zero.
+    const atrasos = {
+        Vermelho: analisarAtraso(numeros, obterCor, 'Vermelho'),
+        Preto: analisarAtraso(numeros, obterCor, 'Preto'),
+        'Baixos': analisarAtraso(numeros, obterFaixa, 'Baixos'),
+        'Altos': analisarAtraso(numeros, obterFaixa, 'Altos'),
+        Par: analisarAtraso(numeros, obterParidade, 'Par'),
+        Ímpar: analisarAtraso(numeros, obterParidade, 'Ímpar')
+    };
+
+    // Ranking descritivo de números observados.
+    const ranking = Array.from({length: 37}, (_, n) => {
+        const geral = (freqNumero[n] || 0) / total;
+        const recente = (freqNumeroRecente[n] || 0) / recentes100.length;
+
+        return {
+            numero: n,
+            geral: geral * 100,
+            recente: recente * 100,
+            score: (geral * 0.60 + recente * 0.40) * 100
+        };
+    }).sort((a, b) => b.score - a.score);
+
+    // Comparação entre janelas temporais.
+    const comparar = (funcao, categoria, listaA, listaB) => {
+        const a = frequencia(listaA, funcao)[categoria] || 0;
+        const b = frequencia(listaB, funcao)[categoria] || 0;
+        return (b - a) * 100;
+    };
+
+    const variacaoVermelho = comparar(
+        obterCor, 'Vermelho', recentes300, recentes30
+    );
+
+    const variacaoPreto = comparar(
+        obterCor, 'Preto', recentes300, recentes30
+    );
+
+    const topNumeros = ranking.slice(0, 5);
+
+    // Indicadores de transição observados.
+    function proximaTransicao(mapa, chave) {
+        const dados = mapa[chave] || {};
+        const entradas = Object.entries(dados)
+            .sort((a, b) => b[1] - a[1]);
+
+        const soma = entradas.reduce((s, x) => s + x[1], 0);
+
+        if (!soma || !entradas.length) return null;
+
+        return {
+            categoria: entradas[0][0],
+            ocorrencias: entradas[0][1],
+            percentual: entradas[0][1] / soma * 100,
+            amostra: soma
+        };
+    }
+
+    const proximaCor = proximaTransicao(transicaoCor, ultimaCor);
+    const proximaFaixa = proximaTransicao(transicaoFaixa, ultimaFaixa);
+    const proximaParidade = proximaTransicao(transicaoParidade, ultimaParidade);
+
+    // A qualidade da amostra é medida pela quantidade,
+    // não representa chance de acerto.
+    const cobertura = Math.min(100, total / 1000 * 100);
+
+    const formatar = (v, casas = 1) => Number(v).toFixed(casas).replace('.', ',');
+
+    const sinal = valor => valor > 0 ? '+' : '';
+
+    $('painelPrevisao').innerHTML = `
+        <div class="space-y-3 text-left">
+
+            <div class="grid grid-cols-2 gap-2">
+                <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                    <span class="text-[9px] text-slate-400 uppercase">Memória total</span>
+                    <div class="text-xl font-bold text-white">${total.toLocaleString('pt-BR')}</div>
+                    <span class="text-[9px] text-emerald-400">Resultados analisados</span>
+                </div>
+
+                <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                    <span class="text-[9px] text-slate-400 uppercase">Última sequência</span>
+                    <div class="text-xl font-bold text-white">${ultimo}</div>
+                    <span class="text-[9px] text-emerald-400">${ultimaCor} / ${ultimaFaixa}</span>
+                </div>
+            </div>
+
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                <h3 class="text-emerald-400 font-bold text-xs mb-2">01. Frequência histórica</h3>
+                ${cores.map(c => `
+                    <div class="mb-2">
+                        <div class="flex justify-between text-[10px]">
+                            <span>${c}</span>
+                            <span>${formatar((freqGeral[c] || 0) * 100)}%</span>
+                        </div>
+                        <div class="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div class="h-full bg-emerald-500" style="width:${(freqGeral[c] || 0) * 100}%"></div>
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                <h3 class="text-emerald-400 font-bold text-xs mb-2">02. Comportamento recente</h3>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                        <span class="text-slate-500 text-[9px]">Vermelho: variação</span>
+                        <div class="font-bold">${sinal(variacaoVermelho)}${formatar(variacaoVermelho)} p.p.</div>
+                    </div>
+                    <div>
+                        <span class="text-slate-500 text-[9px]">Preto: variação</span>
+                        <div class="font-bold">${sinal(variacaoPreto)}${formatar(variacaoPreto)} p.p.</div>
+                    </div>
+                </div>
+                <p class="text-[9px] text-slate-500 mt-2">Comparação das últimas 30 jogadas com as últimas 300. Não representa previsão.</p>
+            </div>
+
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                <h3 class="text-emerald-400 font-bold text-xs mb-2">03. Indicadores de atraso</h3>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    ${Object.entries(atrasos).map(([k,v]) => `
+                        <div class="bg-slate-950 rounded-lg p-2">
+                            <span class="text-slate-400 text-[10px]">${k}</span>
+                            <div class="font-bold text-white">${v} jogadas</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+
+            <div class="bg-slate-900 p-3 rounded-xl border border-slate-800">
+                <h3 class="text-emerald-400 font-bold text-xs mb-2">04. Padrões de transição observados</h3>
+                ${[
+                    ['Cor', proximaCor],
+                    ['Faixa', proximaFaixa],
+                    ['Paridade', proximaParidade]
+                ].map(([nome, dado]) => `
+                    <div class="flex justify-between items-center py-1.5 border-b border-slate-800 last:border-0">
+                        <span class="text-slate-400 text-[10px]">${nome}</span>
+                        <span class="text-white text-xs font-bold">
+                            ${dado ? `${dado.categoria} (${formatar(dado.percentual)}%)` : 'Sem amostra'}
+                        </span>
+                    </div>
+                `).join('')}
+                <p class="text-[9px] text-slate-500 mt-2">Frequência observada após a última categoria. Não indica causalidade.</p>
+            </div>
+
+            <div class="bg-slate-900 p-3 rounded-xl border border-emerald-500/30">
+                <h3 class="text-emerald-400 font-bold text-xs mb-2">05. Ranking estatístico de números</h3>
+                ${topNumeros.map((item, i) => `
+                    <div class="flex items-center justify-between py-1.5 border-b border-slate-800 last:border-0">
+                        <div class="flex items-center gap-2">
+                            <span class="text-slate-500 text-[10px]">#${i+1}</span>
+                            <span class="text-white font-bold">${item.numero}</span>
+                            <span class="text-slate-500 text-[9px]">${obterCor(item.numero)}</span>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-emerald-400 text-xs font-bold">${formatar(item.geral)}%</div>
+                            <div class="text-slate-500 text-[9px]">Histórico</div>
+                        </div>
+                    </div>
+                `).join('')}
+                <p class="text-[9px] text-slate-500 mt-2">Ranking por frequência histórica e recente. Todos os 37 números continuam com a mesma probabilidade teórica em uma roleta justa.</p>
+            </div>
+
+            <div class="bg-amber-950/30 border border-amber-700/40 p-3 rounded-xl">
+                <h3 class="text-amber-400 font-bold text-xs mb-1">Diagnóstico da inteligência</h3>
+                <p class="text-[10px] text-slate-300">
+                    ${total.toLocaleString('pt-BR')} resultados processados.
+                    ${recentes30.length} recentes, ${recentes100.length} na janela intermediária
+                    e ${recentes300.length} na janela ampliada.
+                    O motor recalculou seus indicadores com a nova amostra.
+                </p>
+            </div>
+
+        </div>
+    `;
+
+    // Atualiza o indicador de cobertura da memória.
+    $('barraConfiabilidade').style.width = cobertura + '%';
+    $('labelConfiabilidade').innerText =
+        `${formatar(cobertura, 0)}% (Cobertura de 1.000 registros)`;
+
+    // Mantém o mapa visual.
+    atualizarMapa(ultimo);
+}
+
+// ======================================
+// 6. MAPA E INTERFACE
+// ======================================
+
+function atualizarMapa(n) {
+    $('badgeUltimoMapa').innerText = `#${n} - ${obterCor(n)}`;
+
+    [1,2,3].forEach(c => {
+        const el = $(`grid-col-${c}`);
+        el.className = 'bg-slate-900 border border-slate-800 rounded p-1.5 flex flex-col justify-center';
+    });
+
+    if (n > 0) {
+        const col = obterColuna(n);
+        $(`grid-col-${col}`).className =
+            'bg-emerald-950/70 border border-emerald-600 rounded p-1.5 flex flex-col justify-center text-emerald-400 font-bold';
+    }
+}
+
+function atualizarInterface() {
+    $('statTotal').innerText = historicoGlobal.length.toLocaleString('pt-BR');
+    $('statUltimos').innerText =
+        historicoGlobal.slice(-5).map(x => x.numero).join(', ') || '-';
+
+    if (historicoGlobal.length) {
+        atualizarMapa(historicoGlobal[historicoGlobal.length - 1].numero);
+        executarInteligencia();
+    } else {
+        $('painelPrevisao').innerHTML =
+            'Banco conectado. Aguardando os primeiros resultados.';
+        $('badgeUltimoMapa').innerText = '-';
+    }
+}
+
+// ======================================
+// 7. NOVA SESSÃO
+// ======================================
+
+function limparSessao() {
+    if (!confirm('Iniciar uma nova sessão? O histórico global será preservado.')) return;
+
+    sessionId = 'sessao_' + Date.now();
+    localStorage.setItem('master_session_id', sessionId);
+
+    historicoSessao = [];
+    entradaAtual = '';
+    $('visorNumero').innerText = '-';
+
+    atualizarInterface();
+}
+
+// ======================================
+// 8. INICIALIZAÇÃO
+// ======================================
+
+window.addEventListener('load', carregarHistoricoNuvem);
