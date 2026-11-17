@@ -170,6 +170,205 @@ async function confirmarNumero() {
     }
 }
 
+/* =====================================
+   MOTOR DE APRENDIZADO VALIDADO
+===================================== */
+
+function gerarPrevisao(numeros) {
+    const recentes = numeros.slice(-100);
+
+    function escolher(funcao, categorias) {
+        const contagem = {};
+        const transicoes = {};
+
+        categorias.forEach(c => {
+            contagem[c] = 1; // Suavização estatística
+            transicoes[c] = 1;
+        });
+
+        let amostraTransicao = 0;
+
+        for (const n of recentes) {
+            const c = funcao(n);
+            contagem[c]++;
+        }
+
+        for (let i = 1; i < recentes.length; i++) {
+            if (funcao(recentes[i - 1]) === funcao(recentes[recentes.length - 1])) {
+                transicoes[funcao(recentes[i])]++;
+                amostraTransicao++;
+            }
+        }
+
+        const total = Object.values(contagem)
+            .reduce((a, b) => a + b, 0);
+
+        const somaTransicao = Object.values(transicoes)
+            .reduce((a, b) => a + b, 0);
+
+        const pontuacoes = categorias.map(c => {
+            const base = contagem[c] / total;
+            const transicao = transicoes[c] / somaTransicao;
+
+            const pesoTransicao = amostraTransicao >= 10 ? 0.30 : 0;
+
+            return {
+                categoria: c,
+                score: base * (1 - pesoTransicao) +
+                    transicao * pesoTransicao
+            };
+        });
+
+        return pontuacoes.sort((a, b) => b.score - a.score)[0].categoria;
+    }
+
+    const ranking = Array.from({length: 37}, (_, n) => ({
+        numero: n,
+        frequencia: recentes.filter(x => x === n).length
+    })).sort((a, b) => b.frequencia - a.frequencia);
+
+    return {
+        previsto_numero: ranking[0].numero,
+        previsto_cor: escolher(obterCor, [
+            'Vermelho', 'Preto', 'Verde'
+        ]),
+        previsto_faixa: escolher(obterFaixa, [
+            'Baixos', 'Altos', 'Zero'
+        ]),
+        previsto_paridade: escolher(obterParidade, [
+            'Par', 'Ímpar', 'Zero'
+        ]),
+        base_ultimo_numero: numeros[numeros.length - 1]
+    };
+}
+
+async function salvarPrevisaoPendente(numeros) {
+    if (!numeros.length) return;
+
+    const {data: pendente, error: erroBusca} =
+        await supabaseClient
+            .from('aprendizado_modelo')
+            .select('id')
+            .is('resultado_real', null)
+            .limit(1)
+            .maybeSingle();
+
+    if (erroBusca) throw erroBusca;
+
+    // Não cria outra previsão enquanto houver uma pendente.
+    if (pendente) return;
+
+    const previsao = gerarPrevisao(numeros);
+
+    const {error} = await supabaseClient
+        .from('aprendizado_modelo')
+        .insert([{
+            session_id: sessionId,
+            ...previsao
+        }]);
+
+    // 23505 significa que outra execução já criou a previsão.
+    if (error && error.code !== '23505') throw error;
+}
+
+async function avaliarPrevisao(resultado) {
+    const {data: previsao, error} = await supabaseClient
+        .from('aprendizado_modelo')
+        .select('*')
+        .is('resultado_real', null)
+        .order('criado_em', {ascending: false})
+        .limit(1)
+        .maybeSingle();
+
+    if (error) throw error;
+    if (!previsao) return;
+
+    const {error: erroUpdate} = await supabaseClient
+        .from('aprendizado_modelo')
+        .update({
+            resultado_real: resultado,
+
+            acertou_numero:
+                previsao.previsto_numero === resultado,
+
+            acertou_cor:
+                previsao.previsto_cor === obterCor(resultado),
+
+            acertou_faixa:
+                previsao.previsto_faixa === obterFaixa(resultado),
+
+            acertou_paridade:
+                previsao.previsto_paridade === obterParidade(resultado),
+
+            avaliado_em: new Date().toISOString()
+        })
+        .eq('id', previsao.id)
+        .is('resultado_real', null);
+
+    if (erroUpdate) throw erroUpdate;
+}
+
+async function carregarDesempenho() {
+    const painel = $('painelAprendizado');
+    if (!painel) return;
+
+    const {data, error} = await supabaseClient
+        .from('aprendizado_modelo')
+        .select('acertou_numero, acertou_cor, acertou_faixa, acertou_paridade')
+        .not('avaliado_em', 'is', null);
+
+    if (error) {
+        painel.innerHTML = 'Não foi possível carregar o desempenho.';
+        return;
+    }
+
+    const total = data.length;
+
+    function taxa(campo) {
+        if (!total) return 0;
+
+        const acertos = data.filter(x => x[campo] === true).length;
+        return acertos / total * 100;
+    }
+
+    const itens = [
+        ['Número exato', 'acertou_numero'],
+        ['Cor', 'acertou_cor'],
+        ['Faixa', 'acertou_faixa'],
+        ['Paridade', 'acertou_paridade']
+    ];
+
+    painel.innerHTML = `
+        <div class="bg-slate-950 border border-blue-500/30 rounded-xl p-3 mt-3">
+            <h3 class="text-blue-400 font-bold text-xs mb-3">
+                <i data-lucide="brain-circuit" class="inline w-4 h-4"></i>
+                MEMÓRIA DE APRENDIZADO
+            </h3>
+
+            <p class="text-[10px] text-slate-400 mb-3">
+                ${total} previsões avaliadas contra resultados reais.
+            </p>
+
+            <div class="grid grid-cols-2 gap-2">
+                ${itens.map(([nome, campo]) => `
+                    <div class="bg-slate-900 rounded-lg p-2">
+                        <span class="text-[9px] text-slate-400">${nome}</span>
+                        <div class="text-lg font-bold text-white">
+                            ${taxa(campo).toFixed(1).replace('.', ',')}%
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+
+            <p class="text-[9px] text-slate-500 mt-3">
+                Desempenho histórico, não garantia de resultados futuros.
+            </p>
+        </div>
+    `;
+
+    lucide.createIcons();
+}
+
 // ======================================
 // 4. MOTOR ESTATÍSTICO
 // ======================================
